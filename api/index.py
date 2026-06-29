@@ -97,9 +97,14 @@ def get_db():
 
 
 def _auth_required():
-    """返回 401 响应，弹出浏览器登录框"""
-    return jsonify({'error': '需要登录'}), 401, {
-        'WWW-Authenticate': 'Basic realm="管理后台"'
+    """返回 401 HTML 页面，弹出浏览器登录框"""
+    return '''
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>需要登录</title></head>
+<body><h2>需要登录才能访问管理后台</h2>
+<p>默认账号: admin / admin123</p></body></html>
+''', 401, {
+        'WWW-Authenticate': 'Basic realm="管理后台", charset="UTF-8"'
     }
 
 
