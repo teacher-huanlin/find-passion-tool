@@ -104,7 +104,7 @@ def _auth_required():
 <body><h2>需要登录才能访问管理后台</h2>
 <p>默认账号: admin / admin123</p></body></html>
 ''', 401, {
-        'WWW-Authenticate': 'Basic realm="管理后台", charset="UTF-8"'
+        'WWW-Authenticate': 'Basic realm="Admin Panel", charset="UTF-8"'
     }
 
 
@@ -203,6 +203,24 @@ def admin_test():
 
 def _render_admin():
     """admin 页面渲染（被 /admin 和 /admin-test 共用）"""
+    _ensure_db()
+    is_pg = bool(DATABASE_URL)
+
+    try:
+        if is_pg:
+            conn, _ = get_db()
+            cur = conn.cursor()
+            cur.execute('SELECT id, created_at, views FROM results ORDER BY created_at DESC')
+            rows = [dict(zip([d[0] for d in cur.description], r)) for r in cur.fetchall()]
+            cur.close()
+            conn.close()
+        else:
+            conn, _ = get_db()
+            cur = conn.execute('SELECT id, created_at, views FROM results ORDER BY created_at DESC')
+            rows = [dict(r) for r in cur.fetchall()]
+            conn.close()
+    except Exception:
+        rows = []
 
     items = ''.join(
         f'<tr>'
