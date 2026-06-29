@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>找到想做的事 · 三圈交集引导工具</title>
+<style>
+:root {
+  --passion: #FF6B6B;
+  --passion-light: #FFE8E8;
+  --talent: #5B8FB9;
+  --talent-light: #E3F0FA;
+  --values: #6BAB7B;
+  --values-light: #E8F5EC;
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --text: #2D3436;
+  --text-secondary: #636E72;
+  --border: #E8E8E8;
+  --shadow: 0 2px 16px rgba(0,0,0,0.06);
+  --shadow-hover: 0 4px 24px rgba(0,0,0,0.1);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Progress Bar ===== */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--passion), var(--talent), var(--values));
+  width: 0%;
+  transition: width var(--transition);
+  z-index: 100;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ===== Container ===== */
+#app {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+  min-height: 100vh;
+}
+
+/* ===== Screen System ===== */
+.screen {
+  display: none;
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.screen.active { display: block; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ===== Welcome Screen ===== */
+.welcome-hero {
+  text-align: center;
+  padding: 40px 0 32px;
+}
+.welcome-hero h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+.welcome-hero .subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 36px;
+}
+
+.framework-visual {
+  display: flex;
+  justify-content: center;
+  margin: 36px auto;
+  max-width: 420px;
+}
+.framework-visual svg {
+  width: 100%;
+  height: auto;
+}
+
+.welcome-intro {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+.welcome-intro p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.welcome-intro strong {
+  color: var(--text);
+}
+
+.dimension-cards {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.dim-card {
+  flex: 1;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 16px 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: transform var(--transition);
+}
+.dim-card:hover { transform: translateY(-3px); }
+.dim-card .icon { font-size: 28px; margin-bottom: 8px; }
+.dim-card .name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.dim-card .desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+.dim-card.passion { border-top: 3px solid var(--passion); }
+.dim-card.talent { border-top: 3px solid var(--talent); }
+.dim-card.values { border-top: 3px solid var(--values); }
+
+/* ===== Question Screen ===== */
+.phase-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.phase-tag {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+.phase-tag.passion { background: var(--passion-light); color: var(--passion); }
+.phase-tag.talent { background: var(--talent-light); color: var(--talent); }
+.phase-tag.values { background: var(--values-light); color: var(--values); }
+
+.phase-intro {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.question-num {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.question-text {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+}
+
+.question-hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* Text Input */
+.text-input {
+  width: 100%;
+  min-height: 100px;
+  padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.7;
+}
+.text-input:focus {
+  outline: none;
+  border-color: var(--talent);
+  box-shadow: 0 0 0 3px var(--talent-light);
+}
+.text-input::placeholder { color: #C0C0C0; }
+
+/* Radio Options */
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.option-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 15px;
+}
+.option-item:hover {
+  border-color: var(--talent);
+  transform: translateX(4px);
+}
+.option-item.selected {
+  background: var(--talent-light);
+  border-color: var(--talent);
+  font-weight: 600;
+}
+.option-item .check-dot {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: all var(--transition);
+  position: relative;
+}
+.option-item.selected .check-dot {
+  border-color: var(--talent);
+  background: var(--talent);
+}
+.option-item.selected .check-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px; height: 8px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* Checkbox Grid */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.checkbox-item {
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 14px;
+  text-align: center;
+  user-select: none;
+}
+.checkbox-item:hover {
+  border-color: currentColor;
+  transform: translateY(-2px);
+}
+.checkbox-item.selected {
+  color: white;
+  border-color: transparent;
+  font-weight: 600;
+}
+.checkbox-item.selected.passion { background: var(--passion); }
+.checkbox-item.selected.talent { background: var(--talent); }
+.checkbox-item.selected.values { background: var(--values); }
+
+.select-counter {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  text-align: right;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--text);
+  color: white;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+.btn-primary:disabled {
+  background: var(--border);
+  color: #AAA;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 2px solid var(--border);
+}
+.btn-secondary:hover {
+  background: var(--surface);
+  border-color: var(--text-secondary);
+}
+.btn-gradient {
+  background: linear-gradient(135deg, var(--passion), var(--talent), var(--values));
+  color: white;
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  gap: 12px;
+}
+
+/* ===== Transition Screen ===== */
+.transition-screen {
+  text-align: center;
+  padding: 60px 0;
+}
+.transition-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: scaleIn 0.6s ease;
+}
+.transition-screen h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.transition-screen p {
+  color: var(--text-secondary);
+  font-size: 15px;
+  max-width: 420px;
+  margin: 0 auto 32px;
+  line-height: 1.8;
+}
+
+/* ===== Synthesis Screen ===== */
+.synthesis-section {
+  margin-bottom: 32px;
+}
+.synthesis-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.synthesis-header .icon { font-size: 24px; }
+.synthesis-header .title { font-size: 18px; font-weight: 700; }
+.synthesis-header.passion .title { color: var(--passion); }
+.synthesis-header.talent .title { color: var(--talent); }
+.synthesis-header.values .title { color: var(--values); }
+
+.synthesis-answers {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.synthesis-answer-item {
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.6;
+}
+.synthesis-answer-item:last-child { border-bottom: none; }
+.synthesis-answer-item .label {
+  font-size: 12px;
+  color: #AAA;
+  margin-right: 8px;
+}
+.synthesis-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.synthesis-tag {
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+}
+.synthesis-tag.passion { background: var(--passion-light); color: var(--passion); }
+.synthesis-tag.talent { background: var(--talent-light); color: var(--talent); }
+.synthesis-tag.values { background: var(--values-light); color: var(--values); }
+
+.keyword-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.keyword-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.keyword-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color var(--transition);
+  background: var(--surface);
+}
+.keyword-input:focus {
+  outline: none;
+}
+.keyword-input.passion:focus { border-color: var(--passion); box-shadow: 0 0 0 3px var(--passion-light); }
+.keyword-input.talent:focus { border-color: var(--talent); box-shadow: 0 0 0 3px var(--talent-light); }
+.keyword-input.values:focus { border-color: var(--values); box-shadow: 0 0 0 3px var(--values-light); }
+
+/* ===== Results Screen ===== */
+.results-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.results-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.results-header p {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.venn-container {
+  display: flex;
+  justify-content: center;
+  margin: 32px auto;
+}
+.venn-container svg {
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+}
+
+.results-section {
+  margin-bottom: 32px;
+}
+.results-section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.dimension-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dim-summary-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.dim-summary-card .icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.dim-summary-card .content { flex: 1; }
+.dim-summary-card .name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.dim-summary-card.passion .name { color: var(--passion); }
+.dim-summary-card.talent .name { color: var(--talent); }
+.dim-summary-card.values .name { color: var(--values); }
+.dim-summary-card .keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.formula-box {
+  background: linear-gradient(135deg, var(--passion-light), var(--talent-light), var(--values-light));
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.formula-box .label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+.formula-text {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 2;
+}
+.formula-text .passion-text { color: var(--passion); }
+.formula-text .talent-text { color: var(--talent); }
+.formula-text .values-text { color: var(--values); }
+
+.direction-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.8;
+  position: relative;
+  padding-left: 48px;
+}
+.direction-card::before {
+  content: attr(data-num);
+  position: absolute;
+  left: 18px; top: 20px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--border);
+}
+
+.action-list {
+  list-style: none;
+  counter-reset: action;
+}
+.action-item {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px 16px 52px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  line-height: 1.7;
+  position: relative;
+  counter-increment: action;
+}
+.action-item::before {
+  content: counter(action);
+  position: absolute;
+  left: 18px; top: 16px;
+  width: 24px; height: 24px;
+  background: var(--bg);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+/* ── Job Suggestions ── */
+.job-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  position: relative;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.job-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.job-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.job-rank {
+  font-size: 18px;
+  font-weight: 800;
+  color: #AAA;
+  min-width: 28px;
+}
+.job-card:nth-child(1) .job-rank { color: #F0A500; }
+.job-card:nth-child(2) .job-rank { color: #A0A0A0; }
+.job-card:nth-child(3) .job-rank { color: #CD7F32; }
+.job-card .job-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+.job-card .job-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: #AAA;
+  background: var(--bg);
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.job-base-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8px;
+  padding-left: 38px;
+}
+.job-card .job-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-left: 38px;
+}
+.job-tag {
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: #f0f0f0;
+  color: var(--text-secondary);
+}
+.job-fit-section {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 4px;
+}
+.job-fit-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.job-fit-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  list-style: disc;
+}
+.job-fit-list li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin-bottom: 4px;
+}
+.job-fit-list li:last-child {
+  font-style: italic;
+  color: #999;
+  font-size: 12px;
+}
+.job-no-match {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 28px 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.job-no-match p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+.job-search-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--talent);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 10px 24px;
+  border: 2px solid var(--talent);
+  border-radius: 24px;
+  transition: all var(--transition);
+}
+.job-search-link:hover { background: var(--talent); color: white; }
+
+.results-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  #app { padding: 40px 16px 60px; }
+  .welcome-hero h1 { font-size: 26px; }
+  .question-text { font-size: 19px; }
+  .checkbox-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  .dimension-cards { flex-direction: column; }
+  .formula-text { font-size: 16px; }
+}
+
+/* Print */
+@media print {
+  #progress-bar, .nav-buttons, .results-actions, .btn, .btn-primary, .btn-secondary { display: none !important; }
+  body, * { background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .screen { display: block !important; }
+  .screen:not(.results-screen) { display: none !important; }
+  .results-screen { padding: 18px 0 !important; }
+  .venn-container { max-width: 95%; margin: 0 auto; }
+  .venn-container svg { width: 100%; height: auto; }
+  .results-section h3 {
+    font-size: 16px !important;
+    break-after: avoid;
+    orphans: 3;
+  }
+  .results-header h1 { break-after: avoid; }
+  .results-header p { orphans: 3; widows: 3; }
+  .job-card, .direction-card, .action-item { break-inside: avoid; box-shadow: none !important; border: 1px solid #eee !important; }
+  .job-fit-section { break-inside: avoid; }
+  .formula-box { box-shadow: none !important; border: 2px solid #5B8FB9 !important; }
+  .dim-summary-card { box-shadow: none !important; border: 1px solid #e8e8e8 !important; }
+}
+</style>
+
+<!-- PDF export library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.12.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="app">
+  <!-- Screens rendered here -->
+</div>
+
+<script>
+// ===== Data =====
+const phases = [
+  {
+    id: 'passion',
+    name: '喜欢的事',
+    subtitle: '你的热情领域',
+    description: '喜欢的事不是某个具体职业，而是一个让你充满好奇、想要不断深入的领域或主题。',
+    color: '#FF6B6B',
+    cls: 'passion',
+    icon: '🔥'
+  },
+  {
+    id: 'talent',
+    name: '擅长的事',
+    subtitle: '你的天赋才能',
+    description: '擅长的事不是具体技能（如编程、英语），而是你自然而然的行为和思维方式——那些你不费力就能比别人做得好的事。',
+    color: '#5B8FB9',
+    cls: 'talent',
+    icon: '💡'
+  },
+  {
+    id: 'values',
+    name: '重要的事',
+    subtitle: '你的核心价值观',
+    description: '重要的事是你内心深处认为有意义的、想要实现的状态。它不是具体目标，而是你行动的底层驱动力。',
+    color: '#6BAB7B',
+    cls: 'values',
+    icon: '🌱'
+  }
+];
+
+const questions = [
+  // Phase 0: 喜欢的事
+  { phase: 0, type: 'text', q: '在书店或图书馆里，你会不自觉地走向哪个区域？', placeholder: '比如：心理学、商业管理、历史、设计...', hint: '不用想太多，写下第一个浮现在脑海的画面' },
+  { phase: 0, type: 'text', q: '如果不考虑收入和时间，你会花大量时间深入了解什么？', placeholder: '比如：研究人类行为、探索宇宙、烹饪美食...', hint: '如果没有任何限制，你最纯粹的好奇心指向哪里？' },
+  { phase: 0, type: 'text', q: '朋友们遇到什么话题时，会自然而然来找你聊？', placeholder: '比如：旅行规划、情感问题、科技新闻、读书...', hint: '你在朋友心中是哪个领域的"代言人"？' },
+  { phase: 0, type: 'text', q: '最近一次完全沉浸、忘记时间，是因为在做什么？', placeholder: '描述那个让你忘记一切的时刻...', hint: '心流状态往往指向你真正的热情所在' },
+  { phase: 0, type: 'checkbox', q: '以下哪些领域让你感到兴奋？', options: ['科技创新','艺术设计','教育学习','医疗健康','商业创业','心理学','自然科学','社会公益','文学写作','历史文化','体育运动','美食烹饪','旅行探索','音乐影视','环境保护','儿童成长','个人成长','文化传播','人工智能','生活方式'], minSel: 3, maxSel: 5 },
+
+  // Phase 1: 擅长的事
+  { phase: 1, type: 'text', q: '别人最经常夸你什么？', placeholder: '比如：你总能把复杂的事讲清楚、你特别会照顾人...', hint: '不是具体技能，而是你做事的方式和特质' },
+  { phase: 1, type: 'text', q: '什么事情对你来说毫不费力，但别人经常觉得困难？', placeholder: '比如：整理混乱的信息、安慰沮丧的人、发现规律...', hint: '那些你觉得"这有什么难的"的事' },
+  { phase: 1, type: 'text', q: '小时候，你自然而然就做得好的事是什么？', placeholder: '比如：组织小伙伴玩游戏、画画、调解冲突...', hint: '童年时期的自然倾向，往往是最真实的才能' },
+  { phase: 1, type: 'radio', q: '在团队合作中，你通常扮演什么角色？', options: ['提出创意的人 — 总能想出新点子','组织协调的人 — 把大家串联起来','深入分析的人 — 拆解复杂问题','推动执行的人 — 让事情发生','关心他人的人 — 照顾团队情绪','发现规律的人 — 从混乱中找到模式'] },
+  { phase: 1, type: 'checkbox', q: '以下哪些描述最符合你？', options: ['善于观察他人','擅长整理复杂信息','能快速找到问题核心','善于用故事打动人','有超强的耐心','擅长发现事物间的联系','能轻松适应新环境','善于激发他人潜力','对细节极其敏感','擅长把抽象变具体','有强大逻辑推理','善于倾听','总能找到创新方案','有超强执行力','擅长规划和管理','有敏锐直觉','善于营造氛围','擅长建立系统'], minSel: 3, maxSel: 5 },
+
+  // Phase 2: 重要的事
+  { phase: 2, type: 'text', q: '什么样的事情或现象会让你感到愤怒或不公？', placeholder: '比如：看到有人被歧视、教育资源不均...', hint: '愤怒的背后，藏着你最在乎的价值观' },
+  { phase: 2, type: 'text', q: '你希望自己被别人记住的是什么？', placeholder: '比如：一个帮助过很多人的人、创造了美好事物的人...', hint: '你想要的"遗产"是什么？' },
+  { phase: 2, type: 'text', q: '如果生命只剩一年，你最想完成什么？', placeholder: '写下内心最深处的渴望...', hint: '当时间有限，真正重要的事就会浮现' },
+  { phase: 2, type: 'text', q: '你最欣赏的人身上，有什么共同的特质？', placeholder: '比如：勇敢、善良、有远见、坚持...', hint: '你欣赏的特质，就是你向往的价值观' },
+  { phase: 2, type: 'checkbox', q: '以下哪些价值观对你来说最重要？', options: ['自由','成长','家庭','创造力','公平','诚实','勇气','和谐','影响力','独立','安全感','归属感','成就感','好奇心','服务他人','美学追求','智慧','平衡','责任','变革创新'], minSel: 3, maxSel: 5 }
+];
+
+// ===== State =====
+let state = {
+  step: 0, // 0=welcome, 1-15=questions, 16=synthesis, 17=results
+  answers: {},
+  keywords: { passion: [], talent: [], values: [] }
+};
+
+// Load from localStorage
+try {
+  const saved = JSON.parse(localStorage.getItem('find-passion-tool'));
+  if (saved) state = { ...state, ...saved };
+} catch(e) {}
+
+function saveState() {
+  localStorage.setItem('find-passion-tool', JSON.stringify(state));
+}
+
+// ===== Render =====
+const app = document.getElementById('app');
+const progressBar = document.getElementById('progress-bar');
+
+function render() {
+  const step = state.step;
+  if (step === 0) renderWelcome();
+  else if (step >= 1 && step <= 15) renderQuestion(step - 1);
+  else if (step === 16) renderSynthesis();
+  else if (step === 17) renderResults();
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress() {
+  const total = 17; // 0-17
+  const pct = (state.step / total) * 100;
+  progressBar.style.width = pct + '%';
+}
+
+// ----- Welcome -----
+function renderWelcome() {
+  app.innerHTML = `
+    <div class="screen active welcome-screen">
+      <div class="welcome-hero">
+        <h1>找到想做的事</h1>
+        <p class="subtitle">基于八木仁平「三圈交集」方法的引导工具</p>
+      </div>
+
+      <div class="framework-visual">
+        <svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="150" cy="130" r="100" fill="#FF6B6B" opacity="0.3"/>
+          <circle cx="250" cy="130" r="100" fill="#5B8FB9" opacity="0.3"/>
+          <circle cx="200" cy="210" r="100" fill="#6BAB7B" opacity="0.3"/>
+          <text x="90" y="80" fill="#FF6B6B" font-size="14" font-weight="700">喜欢的事</text>
+          <text x="250" y="80" fill="#5B8FB9" font-size="14" font-weight="700">擅长的事</text>
+          <text x="165" y="290" fill="#6BAB7B" font-size="14" font-weight="700">重要的事</text>
+          <text x="200" y="170" text-anchor="middle" fill="#2D3436" font-size="13" font-weight="700">真正想做的事</text>
+        </svg>
+      </div>
+
+      <div class="welcome-intro">
+        <p>每个人心中都有<strong>真正想做的事</strong>，但它不是"找到"的，而是通过理解自己<strong>"梳理"出来的</strong>。</p>
+        <br>
+        <p>这个工具基于八木仁平《如何找到想做的事》一书的核心方法论，通过<strong>15 个引导性问题</strong>，帮你从三个维度梳理自我，最终找到属于你的三圈交集。</p>
+      </div>
+
+      <div class="dimension-cards">
+        <div class="dim-card passion">
+          <div class="icon">🔥</div>
+          <div class="name">喜欢的事</div>
+          <div class="desc">让你充满好奇<br>想要深入的领域</div>
+        </div>
+        <div class="dim-card talent">
+          <div class="icon">💡</div>
+          <div class="name">擅长的事</div>
+          <div class="desc">自然而然<br>做得好的方式</div>
+        </div>
+        <div class="dim-card values">
+          <div class="icon">🌱</div>
+          <div class="name">重要的事</div>
+          <div class="desc">内心深处<br>认为有意义的</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <button class="btn btn-gradient" onclick="startTool()">开始探索 →</button>
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--text-secondary);margin-top:16px;">
+        约 10-15 分钟 · 可随时返回上一步 · 自动保存进度
+      </p>
+    </div>
+  `;
+}
+
+function startTool() {
+  state.step = 1;
+  saveState();
+  render();
+}
+
+// ----- Question -----
+function renderQuestion(qIndex) {
+  const q = questions[qIndex];
+  const phase = phases[q.phase];
+  const isFirstOfPhase = qIndex === 0 || questions[qIndex - 1].phase !== q.phase;
+
+  let inputHTML = '';
+
+  if (q.type === 'text') {
+    const val = state.answers[qIndex] || '';
+    inputHTML = `
+      <textarea class="text-input" id="answer-input" placeholder="${q.placeholder || ''}" 
+        oninput="onTextInput(${qIndex}, this.value)">${escapeHtml(val)}</textarea>
+    `;
+  } else if (q.type === 'radio') {
+    const selected = state.answers[qIndex];
+    inputHTML = `<div class="option-list">`;
+    q.options.forEach((opt, i) => {
+      const isSel = selected === i;
+      inputHTML += `
+        <div class="option-item ${isSel ? 'selected' : ''}" onclick="onRadioSelect(${qIndex}, ${i})">
+          <div class="check-dot"></div>
+          <span>${opt}</span>
+        </div>
+      `;
+    });
+    inputHTML += `</div>`;
+  } else if (q.type === 'checkbox') {
+    const selected = state.answers[qIndex] || [];
+    inputHTML = `
+      <div class="checkbox-grid">
+        ${q.options.map((opt, i) => {
+          const isSel = selected.includes(i);
+          return `<div class="checkbox-item ${isSel ? 'selected ' + phase.cls : ''}" 
+            onclick="onCheckboxToggle(${qIndex}, ${i}, ${q.minSel}, ${q.maxSel})">${opt}</div>`;
+        }).join('')}
+      </div>
+      <div class="select-counter">已选 ${selected.length}/${q.maxSel}（至少 ${q.minSel} 个）</div>
+    `;
+  }
+
+  const canProceed = canProceedQuestion(qIndex);
+
+  app.innerHTML = `
+    <div class="screen active question-screen">
+      ${isFirstOfPhase ? `
+        <div class="phase-header">
+          <span class="phase-tag ${phase.cls}">${phase.icon} ${phase.name}</span>
+        </div>
+        <p class="phase-intro">${phase.description}</p>
+      ` : `
+        <div class="phase-header">
+          <span class="phase-tag ${phase.cls}">${phase.icon} ${phase.name}</span>
+        </div>
+      `}
+
+      <div class="question-num">问题 ${qIndex + 1} / 15</div>
+      <div class="question-text">${q.q}</div>
+      ${q.hint ? `<div class="question-hint">💡 ${q.hint}</div>` : ''}
+
+      ${inputHTML}
+
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="prevStep()">← 上一步</button>
+        <button class="btn btn-primary" id="next-btn" ${!canProceed ? 'disabled' : ''} onclick="nextStep()">
+          ${qIndex === 14 ? '开始梳理 →' : '下一步 →'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function canProceedQuestion(qIndex) {
+  const q = questions[qIndex];
+  const ans = state.answers[qIndex];
+  if (q.type === 'text') return ans && ans.trim().length > 0;
+  if (q.type === 'radio') return ans !== undefined;
+  if (q.type === 'checkbox') return ans && ans.length >= (q.minSel || 1);
+  return true;
+}
+
+function updateNextButton() {
+  const qIndex = state.step - 1;
+  const btn = document.getElementById('next-btn');
+  if (btn) {
+    btn.disabled = !canProceedQuestion(qIndex);
+  }
+}
+
+function onTextInput(qIndex, val) {
+  state.answers[qIndex] = val;
+  saveState();
+  updateNextButton();
+}
+
+function onRadioSelect(qIndex, optIndex) {
+  state.answers[qIndex] = optIndex;
+  saveState();
+  render();
+}
+
+function onCheckboxToggle(qIndex, optIndex, minSel, maxSel) {
+  if (!state.answers[qIndex]) state.answers[qIndex] = [];
+  const arr = state.answers[qIndex];
+  const pos = arr.indexOf(optIndex);
+  if (pos > -1) {
+    arr.splice(pos, 1);
+  } else {
+    if (arr.length >= maxSel) return;
+    arr.push(optIndex);
+  }
+  saveState();
+  render();
+}
+
+function nextStep() {
+  if (state.step === 15) {
+    prefillKeywords();
+    state.step = 16;
+  } else {
+    state.step++;
+  }
+  saveState();
+  render();
+}
+
+function prevStep() {
+  if (state.step > 0) {
+    state.step--;
+    saveState();
+    render();
+  }
+}
+
+// ----- Synthesis -----
+function prefillKeywords() {
+  // Pre-fill keywords from checkbox/radio answers
+  ['passion','talent','values'].forEach((phaseId, phaseIdx) => {
+    const phaseQuestions = questions.map((q, i) => ({q, i})).filter(x => x.q.phase === phaseIdx);
+    const kws = [];
+    phaseQuestions.forEach(({q, i}) => {
+      const ans = state.answers[i];
+      if (ans === undefined || ans === null) return;
+      if (q.type === 'checkbox' && Array.isArray(ans)) {
+        ans.forEach(idx => kws.push(q.options[idx]));
+      } else if (q.type === 'radio' && typeof ans === 'number') {
+        // Extract the short part before " — "
+        const parts = q.options[ans].split(' — ');
+        kws.push(parts[0]);
+      }
+    });
+    state.keywords[phaseId] = kws.slice(0, 3);
+  });
+  saveState();
+}
+
+function renderSynthesis() {
+  let sectionsHTML = '';
+  phases.forEach((phase, phaseIdx) => {
+    const phaseQuestions = questions.map((q, i) => ({q, i})).filter(x => x.q.phase === phaseIdx);
+    
+    let answersHTML = '';
+    phaseQuestions.forEach(({q, i}) => {
+      const ans = state.answers[i];
+      if (ans === undefined || ans === null || (Array.isArray(ans) && ans.length === 0)) return;
+      
+      if (q.type === 'text') {
+        answersHTML += `
+          <div class="synthesis-answer-item">
+            <span class="label">Q${i+1}</span>${escapeHtml(ans)}
+          </div>
+        `;
+      } else if (q.type === 'radio') {
+        answersHTML += `
+          <div class="synthesis-answer-item">
+            <span class="label">Q${i+1}</span>${q.options[ans]}
+          </div>
+        `;
+      } else if (q.type === 'checkbox') {
+        const tags = ans.map(idx => `<span class="synthesis-tag ${phase.cls}">${q.options[idx]}</span>`).join('');
+        answersHTML += `
+          <div class="synthesis-answer-item">
+            <span class="label">Q${i+1}</span>
+            <div class="synthesis-tags">${tags}</div>
+          </div>
+        `;
+      }
+    });
+
+    const kws = state.keywords[phase.cls] || [];
+    const kwInputs = [0,1,2].map(idx => 
+      `<input class="keyword-input ${phase.cls}" type="text" 
+        placeholder="关键词 ${idx+1}" 
+        value="${kws[idx] ? escapeHtml(kws[idx]) : ''}"
+        oninput="updateKeyword('${phase.cls}', ${idx}, this.value)">`
+    ).join('');
+
+    sectionsHTML += `
+      <div class="synthesis-section">
+        <div class="synthesis-header ${phase.cls}">
+          <span class="icon">${phase.icon}</span>
+          <span class="title">${phase.name} — 提炼关键词</span>
+        </div>
+        <div class="synthesis-answers">${answersHTML}</div>
+        <div class="keyword-label">从上面的回答中，提炼 2-3 个最能代表你的关键词：</div>
+        <div class="keyword-inputs">${kwInputs}</div>
+      </div>
+    `;
+  });
+
+  app.innerHTML = `
+    <div class="screen active synthesis-screen">
+      <div class="welcome-hero">
+        <h1 style="font-size:26px;">梳理你的三要素</h1>
+        <p class="subtitle">回顾你的回答，提炼出每个维度的核心关键词</p>
+      </div>
+      ${sectionsHTML}
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="prevStep()">← 上一步</button>
+        <button class="btn btn-gradient" onclick="goToResults()">生成我的三圈交集 →</button>
+      </div>
+    </div>
+  `;
+}
+
+function updateKeyword(phase, idx, val) {
+  if (!state.keywords[phase]) state.keywords[phase] = [];
+  state.keywords[phase][idx] = val;
+  saveState();
+}
+
+function goToResults() {
+  state.step = 17;
+  saveState();
+  render();
+}
+
+// ----- Results -----
+
+// ── Job Database ──
+const jobDB = [
+  { j:'AI产品经理', d:'定义AI产品方向，协调技术与业务需求', k:['人工智能','科技创新','能快速找到问题核心','擅长把抽象变具体'], a:['在「{p}」方向做「AI产品经理」，核心是识别AI技术可落地的真实场景并定义产品。建议从单点场景切入（如AI客服、AI内容生成），用MVP验证价值和PMF。','字节跳动/百度/阿里云AI产品团队 / AI创业公司（A-B轮）产品岗 / 行业头部企业AI Lab产品经理','AI产品助理 → AI产品经理 → AI产品线负责人 → AI业务VP / AI创业产品合伙人'] },
+  { j:'机器学习工程师', d:'设计训练AI模型，解决复杂问题', k:['人工智能','科技创新','有强大逻辑推理','擅长建立系统'], a:['在「{p}」方向做「机器学习工程师」，核心是模型的设计、训练与部署。建议聚焦一个方向（如NLP/CV/推荐系统）做深，用Kaggle/开源项目验证工程能力。','互联网大厂AI Lab / 自动驾驶公司 / AI芯片/算力公司 / 技术驱动型创业公司','初级算法工程师 → 算法专家 → 技术Leader/高级科学家 → AI架构师 → CTO/首席AI科学家'] },
+  { j:'技术架构师', d:'设计系统架构，确保技术方案可扩展', k:['科技创新','人工智能','擅长整理复杂信息','有强大逻辑推理','擅长建立系统'], a:['在「{p}」方向做「技术架构师」，核心是系统设计与技术决策。建议经历至少一个从0到1再到100的完整项目周期，积累跨领域技术视野（后端/数据/AI）。','互联网公司技术中台 / 大型企业CTO办公室 / 云服务厂商（阿里云/腾讯云/AWS） / 创业公司技术合伙人','高级工程师 → 技术Leader → 系统架构师 → 首席架构师 → CTO / 技术VP'] },
+  { j:'数据科学家', d:'从数据中提取洞察，驱动业务决策', k:['自然科学','科技创新','人工智能','擅长发现事物间的联系','擅长整理复杂信息','有强大逻辑推理'], a:['在「{p}」方向做「数据科学家」，核心是用统计和机器学习方法从数据中提取可行动洞察。建议先选一个行业深耕（如电商/金融/医疗），「领域知识+数据分析」是你的核心竞争力。','互联网公司数据科学团队 / 咨询公司数据分析部门 / 金融科技公司量化研究 / Saas产品增长团队','数据分析师 → 数据科学家 → 高级数据科学家 → 数据科学负责人 → CDO/首席数据官'] },
+  { j:'AI训练师', d:'训练和优化AI模型，提升模型表现', k:['人工智能','有超强的耐心','对细节极其敏感'], a:['在「{p}」方向做「AI训练师」，核心是数据标注策略、模型评估与迭代优化。大模型时代需要专业的Prompt工程和评估能力，可聚焦垂直领域（如法律/医疗）做细做深。','AI数据服务公司 / 大模型公司的数据/评估团队 / AI创业公司的模型优化岗 / 自动驾驶数据标注公司','初级训练师 → 数据/模型评估负责人 → AI产品运营经理 → AI训练团队负责人'] },
+  { j:'AI伦理顾问', d:'评估AI应用的社会影响，制定伦理框架', k:['人工智能','公平','责任','诚实'], a:['在「{p}」方向做「AI伦理顾问」，核心是平衡技术发展与社会责任。建议了解国内外AI法规（欧盟AI法案/中国生成式AI管理办法），结合哲学/法律/计算机跨学科视角。','科技公司AI治理部门 / 政策研究智库 / 国际组织（OECD/UNESCO） / 法律咨询公司AI合规团队','AI伦理分析师 → AI治理负责人 → 首席AI伦理官 → 政策制定者 / AI治理独立顾问'] },
+  { j:'UI/UX设计师', d:'设计产品界面与用户体验', k:['艺术设计','创造力','美学追求','对细节极其敏感'], a:['在「{p}」方向做「UI/UX设计师」，核心是用户需求洞察和视觉方案表达能力。建议搭建完整作品集网站，覆盖Web/移动端/设计系统等不同维度，用「设计文档」展示决策过程。','互联网公司设计团队 / 设计咨询公司 / SaaS产品公司 / 独立设计工作室','初级设计师 → 高级设计师 → 设计Lead → 设计主管/设计总监 → 设计VP / 独立设计顾问'] },
+  { j:'创意总监', d:'把控品牌创意方向，领导创意团队', k:['艺术设计','创造力','影响力','善于用故事打动人','总能找到创新方案'], a:['在「{p}」方向做「创意总监」，核心是用创意和视觉语言传递品牌价值。建议先做扎实的创意执行（设计/文案/视频均可），用作品建立声誉后再走向管理。「好作品」是最好的简历。','4A广告公司 / 品牌方创意/品牌部门 / 设计咨询公司 / 独立创意热店','资深设计师/文案 → 创意组长 → 创意副总监 → 创意总监 → 执行创意总监 / 创意合伙人'] },
+  { j:'产品设计师', d:'从0到1设计产品的外观与交互', k:['艺术设计','科技创新','创造力','善于营造氛围','擅长把抽象变具体'], a:['在「{p}」方向做「产品设计师」，核心是把模糊需求转化为可用的产品方案。建议掌握「设计+产品思维」的复合能力，关注全链路设计（从用户研究到交互原型到视觉落地）。','互联网公司产品设计部门 / 设计咨询公司 / 创业公司设计合伙人 / 用户研究机构','初级产品设计师 → 产品设计师 → 高级产品设计师 → 设计主管 → 设计VP / 产品合伙人'] },
+  { j:'品牌设计师', d:'打造品牌视觉体系，传达品牌理念', k:['艺术设计','创造力','美学追求','文化传播'], a:['在「{p}」方向做「品牌设计师」，核心是构建统一的品牌视觉语言。建议以3-5个完整品牌案例作为作品集核心，展示从LOGO到品牌手册的全链路设计能力。','品牌设计工作室 / 新消费品牌品牌部 / 4A广告公司设计部 / 独立品牌设计师','初级设计师 → 品牌设计师 → 资深品牌设计师 → 品牌设计总监 → 创意合伙人 / 独立品牌设计工作室'] },
+  { j:'教育产品经理', d:'设计教育类产品，连接教学需求与技术', k:['教育学习','儿童成长','能快速找到问题核心'], a:['在「{p}」方向做「教育产品经理」，核心是理解教学场景并转化为产品方案。建议先深入一线了解用户（学生/老师/家长），教育领域「场景感」比「产品方法论」更重要。','在线教育平台（得到/猿辅导/好未来） / 教育科技创业公司 / 企业培训SaaS部门 / 出版教育数字化团队','教育产品助理 → 教育产品经理 → 教育产品线负责人 → 教育产品VP → 教育科技创业者'] },
+  { j:'课程设计师', d:'设计教学内容和学习路径', k:['教育学习','擅长整理复杂信息','擅长把抽象变具体','个人成长'], a:['在「{p}」方向做「课程设计师」，核心是把专业知识转化为结构化学习体验。建议以一门完整课程作为作品（可免费发布到得到/知乎等平台验证），用学员反馈迭代设计。','在线教育平台课程研发部 / 企业大学 / 教育培训机构 / 知识付费MCN / 独立课程制作人','课程助理 → 课程设计师 → 课程产品经理 → 学习体验设计负责人 → 独立教育内容品牌'] },
+  { j:'培训师/企业教练', d:'设计和交付企业培训项目', k:['教育学习','个人成长','善于激发他人潜力','善于用故事打动人'], a:['在「{p}」方向做「培训师/企业教练」，核心是激发他人的潜力。建议先选择你最有发言权的1-2个主题（如沟通/管理/专业领域），打磨可复用的课程模块，积累培训小时数和案例。','企业培训咨询公司 / 大型企业培训/人才发展部门 / 独立培训师 / 在线教育平台讲师','助理培训师 → 培训师 → 高级培训师 → 培训总监/企业大学校长 → 独立培训品牌'] },
+  { j:'学习体验设计师', d:'设计引人入胜的学习互动体验', k:['教育学习','创造力','游戏设计','儿童成长'], a:['在「{p}」方向做「学习体验设计师」，核心是用游戏化、互动化设计提升学习效果。建议研究Duolingo/可汗学院等标杆产品的学习机制，用最小可用课程测试你的设计假设。','教育科技公司产品设计团队 / 儿童教育产品公司 / 游戏化学习平台 / 企业培训创新团队','学习设计助理 → 学习体验设计师 → 学习产品经理 → 学习设计总监 / 教育产品创新顾问'] },
+  { j:'职业规划师/人生教练', d:'帮助他人发现方向、规划成长路径', k:['个人成长','善于倾听','善于激发他人潜力','服务他人'], a:['在「{p}」方向做「职业规划师/人生教练」，核心是帮助他人理清方向。建议先系统学习教练技术（ICF认证等），以公益或低价咨询积累案例小时数，用「客户成果」建立口碑。','独立执业（最主流路径） / 职业规划咨询公司 / 企业员工关怀部门EAP / 在线平台（简单心理/在行）','实习教练 → 专业教练（ACC） → 资深教练（PCC） → 大师级教练（MCC） / 教练工作室创始人'] },
+  { j:'医疗产品经理', d:'设计医疗健康类产品', k:['医疗健康','能快速找到问题核心'], a:['在「{p}」方向做「医疗产品经理」，核心是解决医疗场景的真实痛点。医疗行业壁垒高，建议先深入了解1-2个细分场景（如在线问诊/慢病管理/医院SaaS），积累领域知识。','互联网医疗公司（丁香园/微医/京东健康） / 医疗SaaS企业 / 大型医院信息化部门 / 医疗器械公司数字产品团队','医疗产品助理 → 医疗产品经理 → 医疗产品线负责人 → 医疗业务总监 → 医疗科技创业者'] },
+  { j:'健康管理师', d:'为个人或企业提供健康管理方案', k:['医疗健康','服务他人','平衡'], a:['在「{p}」方向做「健康管理师」，核心是用专业知识帮助他人改善健康。建议获取国家认可的健康管理师资质，从1对1服务开始积累案例，逐步搭建个人品牌。','健康管理公司 / 保险公司健康管理部 / 企业员工健康福利部门 / 独立健康管理顾问 / 运动康复机构','健康管理助理 → 健康管理师 → 高级健康管理师 → 健康管理项目负责人 → 独立健康顾问/创业者'] },
+  { j:'数字健康专家', d:'用数字化手段改善健康管理体验', k:['医疗健康','科技创新','人工智能'], a:['在「{p}」方向做「数字健康专家」，核心是用技术手段提升健康服务的可及性和效率。建议关注AI+健康（智能诊断/健康监测/远程医疗）以及可穿戴设备的数据应用。','数字健康创业公司 / 医疗AI公司 / 可穿戴设备公司 / 保险公司创新部门 / 互联网医疗平台','健康数据分析师 → 数字健康产品经理 → 数字健康业务负责人 → 数字健康VP / 健康科技创业者'] },
+  { j:'心理咨询师', d:'提供心理健康咨询与治疗', k:['心理学','善于倾听','善于观察他人','服务他人','有超强的耐心'], a:['在「{p}」方向做「心理咨询师」，核心是用专业技术和共情能力帮助来访者。建议走正规培训+认证路径（如中德班/注册系统），从个人体验和督导开始。数字化平台可帮助拓展服务半径。','心理健康平台（简单心理/壹心理） / 学校/企业心理咨询中心 / 综合医院心理科 / 独立执业','实习生 → 初级咨询师 → 中级咨询师 → 高级咨询师/督导师 → 独立执业/工作室创始人'] },
+  { j:'创业者/创始人', d:'从0到1创建事业', k:['商业创业','创造力','勇气','有超强执行力','变革创新'], a:['在「{p}」方向做「创业者/创始人」，核心是发现未被满足的需求并用商业方式解决。建议先用「副业/小项目」验证想法，找到愿意付费的早期用户比完美的BP重要100倍。','孵化器/加速器 / 创业者社群 / 天使投资人网络 / 产业链上下游合作伙伴','MVP验证 → 种子用户获取 → PMF → A轮融资 → 规模化增长 → B/C轮 / 退出 / 连续创业'] },
+  { j:'管理咨询顾问', d:'为企业提供战略和运营建议', k:['商业创业','能快速找到问题核心','有强大逻辑推理','擅长整理复杂信息'], a:['在「{p}」方向做「管理咨询顾问」，核心是结构化思考和高质量输出。建议以Tier1/2咨询公司为起步目标，或从特定行业（如教育/医疗/科技）的精品咨询切入。PPT/数据分析/沟通是基本功。','管理咨询公司（麦肯锡/BCG/贝恩） / 精品咨询公司 / 四大咨询部门 / 企业战略部 / 独立顾问','分析师 → 咨询顾问 → 项目经理 → 总监 → 合伙人 / 企业战略VP / 独立咨询顾问'] },
+  { j:'商业分析师', d:'分析市场数据，支持商业决策', k:['商业创业','自然科学','有强大逻辑推理','擅长发现事物间的联系'], a:['在「{p}」方向做「商业分析师」，核心是用数据驱动商业决策。建议熟练掌握SQL/Python/BI工具，聚焦1-2个行业（如电商/金融/教育）积累分析框架和业务理解。','互联网公司商业分析/战略部 / 咨询公司 / 金融机构研究部门 / 创业公司运营分析岗','商业分析助理 → 商业分析师 → 高级商业分析师 → 商业分析负责人/总监 → CDO/战略VP'] },
+  { j:'投资经理/VC', d:'评估投资项目，做出投资决策', k:['商业创业','有敏锐直觉','有强大逻辑推理'], a:['在「{p}」方向做「投资经理/VC」，核心是对行业趋势的判断力和对人/项目的评估能力。建议先从产业视角切入（如AI/消费/医疗），「产业深度认知+投资逻辑」是核心竞争力。','风险投资机构（红杉/高瓴/IDG） / 产业资本CVC / 天使投资机构 / 家族办公室 / 孵化器','投资分析师 → 投资经理 → 副总裁/VP → 合伙人 → 管理合伙人 / 独立投资人'] },
+  { j:'运营总监/COO', d:'负责企业日常运营，优化流程', k:['商业创业','擅长规划和管理','有超强执行力','擅长建立系统'], a:['在「{p}」方向做「运营总监/COO」，核心是建立运营体系而非亲力亲为。建议先有扎实的运营一线经验（懂获客/转化/留存各个环节），再向「建系统+带团队」转型。','互联网公司运营部门 / 各行业头部企业运营管理岗 / 创业公司COO / 咨询公司运营顾问','运营专员 → 运营经理 → 运营总监 → COO → CEO / 运营合伙人 / 独立运营顾问'] },
+  { j:'UX研究员', d:'研究用户行为与心理，优化产品体验', k:['心理学','善于观察他人','善于倾听','擅长发现事物间的联系'], a:['在「{p}」方向做「UX研究员」，核心是用研究方法洞察用户真实需求。建议系统掌握定性和定量研究方法（访谈/可用性测试/问卷/日志分析），以研究报告和个人作品集展示能力。','互联网公司UED/用户研究团队 / 设计咨询公司 / 市场研究机构（尼尔森/益普索） / 产品公司用研部门','初级研究员 → UX研究员 → 高级研究员 → 研究经理/用研负责人 → 研究总监/用户研究VP'] },
+  { j:'用户研究员', d:'深入了解用户需求，驱动产品改进', k:['心理学','善于观察他人','善于倾听'], a:['在「{p}」方向做「用户研究员」，核心是从用户行为中找到产品优化方向。建议深入参与至少3个完整产品迭代周期的用户研究，积累可量化的「研究影响业务」案例。','互联网公司产品/设计团队 / 市场研究公司 / 咨询公司消费者洞察团队 / 创业公司Growth团队','用户研究助理 → 用户研究员 → 高级用户研究员 → 用户研究负责人 → 首席体验官/VP of Research'] },
+  { j:'组织发展顾问', d:'帮助企业优化组织结构和人才发展', k:['心理学','商业创业','善于激发他人潜力','善于观察他人'], a:['在「{p}」方向做「组织发展顾问」，核心是用组织行为学方法提升企业效能。建议以OD/HR咨询公司为起点，积累不同行业/规模企业的组织诊断和变革项目经验。','人力资源咨询公司（美世/合益/韦莱韬悦） / 大型企业OD/HRBP部门 / 独立OD顾问 / 商学院/培训机构','OD专员 → OD经理 → OD高级经理 → OD总监 → 人才发展VP / 独立OD咨询顾问'] },
+  { j:'人才发展经理', d:'制定和实施人才发展策略', k:['个人成长','心理学','善于激发他人潜力','善于观察他人'], a:['在「{p}」方向做「人才发展经理」，核心是设计和落地人才培养体系。建议从培训项目设计入手，逐步搭建「选育用留」完整框架。人才发展是CEO最关注的HR议题之一。','大型企业HR人才发展部门 / 人力资源咨询公司 / 在线教育企业培训业务线 / 创业公司HRD','培训专员 → 人才发展专员 → 人才发展经理 → 人才发展总监 → HRVP / 企业大学校长'] },
+  { j:'研究员/科学家', d:'从事基础或应用科学研究', k:['自然科学','有强大逻辑推理','好奇心','智慧'], a:['在「{p}」方向做「研究员/科学家」，核心是提出有价值的问题并找到答案。建议在博士/博后阶段建立领域影响力（顶会/顶刊），关注产学研结合的路径——企业研究院是一个现实选项。','高校/研究所 / 企业研究院（微软/谷歌/华为2012实验室） / 科技政策智库 / 独立研究机构','博士生 → 博士后 → 助理研究员 → 副研究员 → 研究员/教授 → 实验室负责人/首席科学家'] },
+  { j:'科普作家/科学传播者', d:'把复杂科学知识转化为公众能理解的内容', k:['自然科学','文学写作','擅长把抽象变具体','善于用故事打动人'], a:['在「{p}」方向做「科普作家/科学传播者」，核心是把高深知识翻译给公众。建议从你热爱的细分领域（如天文/神经科学/AI）开始，在社交媒体持续输出，用「每个内容讲一个故事」代替「讲知识点」。','科普媒体（果壳/科普中国/原理） / 科技公司的科学传播部门 / 出版社科普编辑 / 独立科普创作者','科普作者/编辑 → 专栏主笔/主编 → 科学传播总监 → 科普出版人 / 独立科普KOL/畅销书作者'] },
+  { j:'环保/可持续发展顾问', d:'为企业提供环保与可持续发展方案', k:['环境保护','自然科学','责任','变革创新'], a:['在「{p}」方向做「环保/可持续发展顾问」，核心是帮助组织在商业目标和环保责任之间找到最优解。碳中和政策推动行业快速增长，ESG专业知识+行业认知是核心壁垒。','环境咨询公司（ERM/AECOM） / 企业可持续发展/ESG部门 / 环保NGO / 国际发展机构（UNDP/世界银行）','环保顾问助理 → 环保顾问 → 高级环保顾问 → 可持续发展总监 → CSO / 独立环保顾问'] },
+  { j:'ESG分析师', d:'评估企业环境、社会和治理表现', k:['环境保护','商业创业','公平','责任'], a:['在「{p}」方向做「ESG分析师」，核心是评估企业ESG表现并给出改进建议。全球ESG投资规模高速增长，建议掌握ESG评级体系（MSCI/Sustainalytics/CDP）和碳核算方法学。','ESG评级机构（MSCI/Sustainalytics） / 投资机构ESG团队 / 上市公司ESG部门 / 可持续发展咨询公司','ESG分析助理 → ESG分析师 → 高级ESG分析师 → ESG投资经理 → ESG总监/首席可持续发展官'] },
+  { j:'非营利组织管理者', d:'运营公益组织，推动社会问题解决', k:['社会公益','和谐','服务他人','影响力','公平'], a:['在「{p}」方向做「非营利组织管理者」，核心是用有限资源创造最大的社会价值。建议从你关注的1-2个社会议题（如教育平等/环保/乡村振兴）选一个组织实习，理解NGO的运作逻辑。','公益基金会（壹基金/腾讯基金会/爱佑） / 社会企业 / 国际NGO中国办公室 / 行业协会/社团','项目助理 → 项目经理 → 项目总监 → 副秘书长 → 秘书长 / 社会企业创始人'] },
+  { j:'社会工作者', d:'直接服务弱势群体，改善社区福祉', k:['社会公益','和谐','服务他人','归属感'], a:['在「{p}」方向做「社会工作者」，核心是用专业方法（个案工作/小组工作/社区工作）帮助有需要的群体。建议获取社工证（初级→中级→高级），选一个你关心的领域深耕（儿童/老人/残障/社区）。','街道/社区社工服务站 / 公益组织一线服务岗 / 学校/医院社工 / 民政系统社工岗位','助理社工师 → 社工师 → 高级社工师 → 社工督导 → 社工机构负责人 / 社区服务创业者'] },
+  { j:'CSR/社会影响力经理', d:'在企业中推动社会责任项目', k:['社会公益','商业创业','影响力','责任'], a:['在「{p}」方向做「CSR/社会影响力经理」，核心是让企业商业行为对社会产生正向影响。建议关注「商业+公益」的交集，用商业思维做公益，用公益初心做商业。','大型企业CSR/基金会部门 / 影响力投资机构 / 社会企业 / 公益咨询公司','CSR专员 → CSR经理 → CSR总监 → 基金会秘书长 / 社会影响力合伙人 / 社会创业者'] },
+  { j:'公共政策分析师', d:'研究和制定公共政策方案', k:['公平','责任','影响力','社会公益'], a:['在「{p}」方向做「公共政策分析师」，核心是用研究和分析影响政策制定。建议具备经济学/政治学/统计学等跨学科背景，从智库或研究机构起步，积累政策研究报告和行业关系。','政策研究智库 / 政府部门政策研究室 / 国际组织（UNDP/世界银行） / 咨询公司公共政策团队','政策分析助理 → 政策分析师 → 高级政策分析师 → 政策研究主任 → 政策顾问 / 智库负责人'] },
+  { j:'内容策略师', d:'制定品牌内容方向与传播策略', k:['文学写作','文化传播','善于用故事打动人'], a:['在「{p}」方向做「内容策略师」，核心是用内容连接品牌与用户。建议从具体内容形态切入（如公众号/播客/视频），理解不同平台的内容逻辑，再上升到策略层面。','品牌方内容/品牌营销部门 / 内容营销公司 / 媒体平台内容策划岗 / 独立内容顾问','内容编辑 → 内容策划 → 内容策略师 → 内容总监 → 品牌VP/CMO / 独立内容策略顾问'] },
+  { j:'编辑/记者', d:'采写和编辑优质内容', k:['文学写作','诚实','好奇心','善于倾听'], a:['在「{p}」方向做「编辑/记者」，核心是用文字传递有价值的信息。建议选一个垂直领域深耕（如科技/商业/教育/生活方式），建立行业认知和人脉。「领域专家型记者」比通才更有竞争力。','传统媒体（财新/南方周末/三联） / 新媒体平台（得到/虎嗅/36氪） / 品牌内容部门 / 自由撰稿人','实习记者 → 记者/编辑 → 资深记者/主笔 → 主编/内容总监 → 出版人/内容品牌创始人'] },
+  { j:'UX写作者', d:'撰写产品界面文案，优化用户体验', k:['文学写作','对细节极其敏感','擅长把抽象变具体'], a:['在「{p}」方向做「UX写作者」，核心是用精准的语言引导用户完成产品内的任务。建议掌握产品设计思维，从用户体验地图出发设计文案。在AI产品中，Prompt设计是UX写作的新延展。','互联网公司产品/设计团队 / 设计咨询公司 / SaaS产品公司 / 科技公司本地化/国际化团队','内容编辑/文案 → UX写作者 → 高级UX写作者 → 内容设计Lead → 内容设计总监 / 写作顾问'] },
+  { j:'品牌传播经理', d:'规划与执行品牌传播策略', k:['文化传播','文学写作','影响力','善于用故事打动人'], a:['在「{p}」方向做「品牌传播经理」，核心是讲好品牌故事并让更多人听到。建议从具体的传播战役入手（新品发布会/内容营销/IP联名），用数据证明传播效果。','品牌方市场部 / 公关公司（奥美/蓝色光标） / 媒体平台品牌合作部 / 出海品牌团队','品牌专员 → 品牌经理 → 品牌传播经理 → 品牌总监 → CMO / 品牌咨询合伙人'] },
+  { j:'策展人', d:'策划和组织展览活动', k:['历史文化','艺术设计','文化传播','善于营造氛围'], a:['在「{p}」方向做「策展人」，核心是用空间和展品讲述一个故事。建议从策展助理做起，参与完整的展览策划执行流程，建立艺术家/设计师/场地资源网络。数字化策展（VR/AR展览）是新兴方向。','美术馆/博物馆 / 独立策展团队 / 商业空间策展 / 文化传播公司 / 拍卖行/画廊','策展助理 → 策展人 → 资深策展人 → 展览总监 / 独立策展人 / 文化空间创始人'] },
+  { j:'文化项目经理', d:'策划和运营文化类项目', k:['历史文化','文化传播','擅长规划和管理'], a:['在「{p}」方向做「文化项目经理」，核心是让文化项目从创意走到落地。建议熟悉政府文化项目申报流程和商业文化活动执行标准，积累供应商和场地资源。','文化传播公司 / 文旅集团 / 政府文化部门 / 文化基金会 / 独立文化项目工作室','文化项目助理 → 文化项目经理 → 高级项目经理 → 文化项目总监 → 文化机构运营负责人'] },
+  { j:'跨文化顾问', d:'帮助企业应对跨文化挑战', k:['文化传播','旅行探索','善于观察他人','能轻松适应新环境'], a:['在「{p}」方向做「跨文化顾问」，核心是帮助组织和个人在不同文化环境中高效协作。建议有真实的跨国工作/生活经历，专注一个文化区域（如中日/中美/中欧），积累案例和方法论。','跨国公司多样性/包容性部门 / 跨文化培训机构 / 出海企业海外团队支持 / 独立跨文化顾问','跨文化培训助理 → 跨文化培训师 → 跨文化顾问 → 文化与包容性总监 → 独立跨文化顾问/咨询合伙人'] },
+  { j:'运动康复师', d:'帮助人们进行运动损伤康复', k:['体育运动','医疗健康','服务他人','有超强的耐心'], a:['在「{p}」方向做「运动康复师」，核心是用专业知识帮助客户恢复运动功能。建议获取NSCA/ACSM等国际认证，从1对1服务积累案例，可拓展到线上康复指导和内容创作。','运动康复诊所 / 体育俱乐部/运动队 / 健身机构康复部门 / 独立运动康复师 / 线上康复指导','康复助理 → 运动康复师 → 高级康复师 → 康复部门主管 → 康复中心负责人 / 独立康复品牌'] },
+  { j:'体育营销经理', d:'策划和执行体育营销活动', k:['体育运动','商业创业','善于营造氛围'], a:['在「{p}」方向做「体育营销经理」，核心是用赛事/运动员/运动文化为品牌赋能。建议从具体的营销项目（赛事赞助/运动员代言/运动社群活动）中积累经验和案例。','运动品牌（Nike/安踏/李宁） / 体育赛事运营公司 / 体育营销代理公司 / 品牌方体育营销部门','营销助理 → 体育营销专员 → 体育营销经理 → 体育营销总监 → 品牌VP/CMO / 体育营销合伙人'] },
+  { j:'食品产品经理', d:'研发和管理食品类产品', k:['美食烹饪','商业创业'], a:['在「{p}」方向做「食品产品经理」，核心是把食材/配方/包装转化为有市场竞争力的商品。建议从你热门的细分赛道（如健康零食/预制菜/新茶饮）切入，理解供应链和消费者口味。','食品/饮料品牌（元气森林/三顿半/良品铺子） / 食品研发企业 / 餐饮集团产品创新部 / 新消费创业公司','食品研发助理 → 食品产品专员 → 食品产品经理 → 食品产品线负责人 → 食品品牌VP / 食品创业'] },
+  { j:'美食内容创作者', d:'创作美食内容（视频/文字/图片）', k:['美食烹饪','文学写作','生活方式','创造力'], a:['在「{p}」方向做「美食内容创作者」，核心是用美食作为媒介连接和温暖他人。建议选一个细分方向（如烘焙/家常菜/美食探店/健康餐），保持稳定更新频率，用「个人特色」而非「专业度」吸引受众。','独立内容创作者（主流路径） / 美食媒体（下厨房/豆果美食） / 品牌美食内容合作 / MCN签约创作者','兴趣起步 → 稳定输出 → 小范围受众 → 商业合作 → 内容品牌化 → 美食IP / 食品品牌创始人'] },
+  { j:'餐饮创业者', d:'从0到1创建餐饮品牌', k:['美食烹饪','商业创业','创造力','有超强执行力'], a:['在「{p}」方向做「餐饮创业者」，核心是在激烈的餐饮市场中找到差异化定位。建议先用最小成本测试产品（市集/快闪店/外卖店），验证口味和模式后再扩张。单店盈利模型跑通再考虑连锁。','餐饮孵化器 / 美食城/市集 / 供应链资源网络 / 餐饮行业社群 / 天使投资','菜单测试 → 快闪/市集验证 → 首店 → 单店模型跑通 → 连锁扩张 / 品牌升级 / 融资'] },
+  { j:'旅行产品经理', d:'设计和管理旅行产品', k:['旅行探索','善于营造氛围'], a:['在「{p}」方向做「旅行产品经理」，核心是设计让人心动的旅行体验。建议从自由行/小众目的地切入，理解用户决策链路（种草→预订→体验→分享），「体验设计」是核心竞争力。','在线旅游平台（携程/穷游/Mafengwo） / 定制旅行公司 / 目的地旅游局 / 旅行内容社区','旅行产品助理 → 旅行产品经理 → 旅行产品线负责人 → 旅行业务总监 → 旅行品牌创始人'] },
+  { j:'目的地营销专家', d:'推广旅游目的地品牌', k:['旅行探索','文化传播','善于用故事打动人'], a:['在「{p}」方向做「目的地营销专家」，核心是用故事和内容让一个地方变得令人向往。建议掌握内容营销+社媒运营+数据分析的能力，用一个成功的目的地推广案例建立行业口碑。','目的地旅游局/文旅局 / 旅游营销公司 / 文旅地产集团 / 旅行媒体 / 独立旅行内容顾问','营销助理 → 目的地营销专员 → 目的地营销经理 → 目的地营销总监 → 文旅VP / 独立文旅顾问'] },
+  { j:'音乐/影视制作人', d:'全流程把控音乐或影视内容制作', k:['音乐影视','创造力','美学追求','有超强执行力'], a:['在「{p}」方向做「音乐/影视制作人」，核心是把创意从概念变成可播放的内容。建议从参与具体项目（短片/专辑/综艺）做起，积累制作经验和行业人脉。独立制作+上线平台是最快的成长路径。','影视制作公司 / 音乐厂牌 / 视频平台自制内容部门 / MCN / 独立制作人','制作助理 → 制作人 → 资深制作人 → 总制作人/内容总监 → 制作公司创始人 / 独立制片人'] },
+  { j:'内容运营经理', d:'运营内容平台或内容矩阵', k:['音乐影视','文化传播','商业创业','擅长规划和管理'], a:['在「{p}」方向做「内容运营经理」，核心是用数据驱动内容生产和分发。建议从具体平台的运营规则切入（如B站/抖音/小红书），理解不同平台的流量分配机制和用户偏好。','内容平台（B站/抖音/小红书） / 品牌内容运营团队 / MCN / 内容型创业公司','内容运营 → 高级内容运营 → 内容运营经理 → 内容运营总监 → 内容VP / 内容平台创业'] },
+  { j:'娱乐产品经理', d:'设计娱乐类产品（App/平台等）', k:['音乐影视','科技创新'], a:['在「{p}」方向做「娱乐产品经理」，核心是设计和迭代让人上瘾的娱乐产品。建议深入了解游戏化设计（成就系统/社交互动/排名等），关注用户时长和留存等核心指标。','视频/音乐平台（腾讯视频/网易云/B站） / 游戏公司 / 社交娱乐App / 创新型娱乐产品','产品助理 → 产品经理 → 高级产品经理 → 产品线负责人 → 娱乐产品VP / 娱乐科技创业者'] },
+  { j:'儿童教育产品经理', d:'设计面向儿童的寓教于乐产品', k:['儿童成长','教育学习','创造力'], a:['在「{p}」方向做「儿童教育产品经理」，核心是平衡「教育效果」和「使用体验」。建议深入了解儿童认知发展理论，用「家长决策者+儿童使用者」双视角设计产品。','儿童教育科技公司（斑马AI/火花思维） / 出版集团数字教育部门 / 教育硬件公司 / 儿童内容平台','儿童产品助理 → 儿童产品经理 → 儿童产品线负责人 → 儿童教育业务总监 → 教育科技创业者'] },
+  { j:'游戏化学习设计师', d:'将游戏机制融入学习体验', k:['儿童成长','教育学习','创造力'], a:['在「{p}」方向做「游戏化学习设计师」，核心是用游戏机制激发学习动力。建议深入研究游戏设计（成就系统/进度反馈/社交协作）在教育场景的应用，搭建可测试的原型验证效果。','教育科技公司 / 游戏化学习平台 / 企业培训创新部门 / 独立教育游戏设计工作室','学习设计助理 → 游戏化设计师 → 学习体验设计Lead → 游戏化学习产品总监 → 独立教育游戏创业者'] },
+  { j:'儿童心理咨询师', d:'为儿童提供心理健康服务', k:['儿童成长','心理学','善于倾听','善于观察他人'], a:['在「{p}」方向做「儿童心理咨询师」，核心是用专业方法帮助儿童及其家庭。儿童咨询需要考虑家庭系统，建议系统学习儿童心理治疗技术（游戏治疗/沙盘/家庭治疗），获取注册系统认证。','儿童心理诊所/机构 / 学校心理咨询室 / 三甲医院心理科 / 在线儿童心理平台 / 独立执业','实习咨询师 → 初级儿童咨询师 → 中级儿童咨询师 → 高级/督导师 → 独立执业/工作室创始人'] },
+  { j:'社区/社群运营经理', d:'运营线上或线下社群，构建用户关系', k:['生活方式','归属感','善于营造氛围','善于倾听'], a:['在「{p}」方向做「社群运营经理」，核心是构建有归属感的用户社区。建议聚焦一个垂直领域（如阅读/健身/宠物），以「用户价值」而非「运营动作」为中心设计社群活动。','品牌方社群运营部门 / 内容平台社区运营 / 知识付费社群 / 独立社群运营顾问','社群运营专员 → 社群运营经理 → 社区运营总监 → 用户增长VP / 独立社群/会员制创业'] },
+  { j:'品牌经理', d:'全面负责品牌定位与增长', k:['生活方式','文化传播','商业创业','创造力'], a:['在「{p}」方向做「品牌经理」，核心是定义品牌并推动其增长。建议以「品牌案例集」为目标——你参与的每一个品牌项目，都应该是可以放进案例集的作品。','新消费品牌（观夏/三顿半/蕉下） / 国际消费品公司品牌部 / 品牌咨询公司 / 品牌创业公司','品牌助理 → 品牌专员 → 品牌经理 → 品牌总监 → CMO / 品牌创始人 / 品牌咨询合伙人'] },
+  { j:'DTC品牌创始人', d:'直接面向消费者创建品牌', k:['生活方式','商业创业','创造力','有超强执行力'], a:['在「{p}」方向做「DTC品牌创始人」，核心是绕过中间商直接和消费者建立品牌关系。建议从一个小众但需求明确的品类切入（如宠物用品/家居美学/健康食品），用DTC数据闭环快速迭代产品。','DTC创业社区 / 新消费投资网络 / 供应链合作工厂 / 电商平台运营资源','市场调研 → 产品开发 → 首批用户获取 → DTC品牌上线 → 复购验证 → 融资/规模化'] },
+  { j:'项目经理', d:'统筹项目进度、资源和团队', k:['擅长规划和管理','有超强执行力','组织协调'], a:['在「{p}」方向做「项目经理」，核心是确保项目在范围内按时按质交付。建议考取PMP认证，掌握敏捷/瀑布等项目管理方法论。领域知识（如IT/市场/建筑）是项目管理溢价的关键。','互联网公司PMO / 咨询公司 / 大型企业项目管理部 / 活动/会展公司','项目助理 → 项目经理 → 高级项目经理 → 项目总监/PMO负责人 → 运营VP / 独立PM顾问'] },
+  { j:'客服体验设计师', d:'设计卓越的客户服务体验', k:['服务他人','善于倾听','对细节极其敏感'], a:['在「{p}」方向做「客服体验设计师」，核心是让每一次客户接触都成为加分项。建议理解客户服务全链路（售前-售中-售后），从「用户旅程地图」出发设计服务触点。','互联网公司客服/体验部门 / 优秀服务品牌（海底捞/京东）体验设计岗 / 独立服务体验顾问','客服专员 → 客服体验专员 → 客服体验设计师 → 客户体验负责人 → 客户体验VP / 独立体验顾问'] },
+  { j:'调解员/冲突解决专家', d:'帮助各方化解冲突达成共识', k:['和谐','善于倾听','善于观察他人'], a:['在「{p}」方向做「调解员/冲突解决专家」，核心是在冲突中寻找共同利益。建议学习谈判和调解方法论（哈佛谈判术/调解技巧），从邻里/社区调解开始积累实战经验。','法院调解中心 / 社区调解机构 / 企业HR员工关系岗 / 独立调解顾问 / 律师事务所调解团队','实习调解员 → 调解员 → 高级调解员 → 首席调解员 → 调解中心负责人 / 独立冲突解决顾问'] },
+  { j:'自由职业者/独立顾问', d:'独立承接项目，灵活安排工作', k:['自由','独立','能轻松适应新环境'], a:['在「{p}」方向做「自由职业者/独立顾问」，核心是把你的专业能力直接卖给市场。建议先用「副业」验证你的服务是否有付费意愿，再决定All-in。建立个人品牌和客户管道是长期活。','自由职业平台（Upwork/猪八戒） / 自己的个人品牌网站 / 行业社群/朋友圈 / 长期合作客户','副业试水 → 第一个付费客户 → 稳定接单 → 建立品牌 → 构建团队/被动收入 → 独立工作室创始人'] },
+  { j:'趋势研究员/未来学家', d:'研究未来趋势，提供前瞻性洞察', k:['有敏锐直觉','变革创新','好奇心','擅长发现事物间的联系'], a:['在「{p}」方向做「趋势研究员/未来学家」，核心是从纷繁信息中发现未来方向。建议培养多维信息摄入（科技/社会/商业/文化交叉阅读），以「趋势报告/文章」建立领域影响力。','咨询公司趋势/创新部门 / 科技公司战略部 / 趋势研究机构（Trendwatching/Frog） / 独立趋势顾问','研究助理 → 趋势研究员 → 高级趋势研究员 → 趋势/创新总监 → 首席未来学家 / 独立趋势顾问'] },
+  { j:'活动策划', d:'策划和执行各类线下或线上活动', k:['善于营造氛围','擅长规划和管理','有超强执行力'], a:['在「{p}」方向做「活动策划」，核心是创造让人记忆深刻的体验。建议从活动类型切入（如品牌发布会/社群活动/行业峰会），积累供应商资源和应急预案能力。','活动策划公司 / 品牌方市场活动部 / 会展公司 / 独立活动策划工作室','活动执行 → 活动策划 → 高级活动策划 → 活动总监 → 活动公司合伙人 / 独立活动策划品牌'] },
+  { j:'软件工程师', d:'设计、开发和维护软件系统', k:['有强大逻辑推理','擅长建立系统','对细节极其敏感'], a:['在「{p}」方向做「软件工程师」，核心是用代码构建可靠系统解决问题。建议选一个方向（前端/后端/移动端/数据工程）深入，用开源贡献或个人项目证明能力。AI辅助编程时代「系统设计」能力比「写码速度」更重要。','互联网公司技术团队 / 科技公司工程部门 / 数字化创业公司 / 开源项目社区','初级工程师 → 高级工程师 → 技术Leader/Staff Engineer → 首席工程师/Distinguished Engineer → CTO'] },
+  { j:'HR/人力资源经理', d:'负责招聘、培训和员工关系', k:['善于倾听','善于观察他人','归属感','平衡'], a:['在「{p}」方向做「HR/人力资源经理」，核心是让组织有正确的人在正确的位置。建议从招聘/培训/薪酬等模块选一个方向深入，再扩展到全盘HR。懂业务是HR的价值杠杆。','大型企业HR部门 / 人力资源咨询公司 / 招聘/培训类创业公司 / HR SaaS公司','HR专员 → HR经理 → HR高级经理 → HR总监 → HRVP / CHRO / 人力资源咨询合伙人'] },
+  { j:'演讲教练/沟通顾问', d:'帮助他人提升表达和演讲能力', k:['善于用故事打动人','善于激发他人潜力','影响力'], a:['在「{p}」方向做「演讲教练/沟通顾问」，核心是帮助他人自信地表达自己。建议从免费/低价演讲辅导开始积累案例和学员反馈，建立个人IP（写文章/拍视频分享演讲技巧）。','独立演讲教练（主流路径） / 企业培训公司 / 创业加速器演讲辅导 / 主持人/主播转型','兴趣实践 → 公益辅导 → 付费学员 → 稳定的1对1/1对多教练 → 企业培训项目 → 个人品牌/IP'] },
+  { j:'个人发展内容创作者', d:'创作关于成长、效率、心理学等内容', k:['个人成长','善于用故事打动人','影响力','创造力','生活方式'], a:['在「{p}」方向做「个人发展内容创作者」，核心是用内容帮助他人变得更好。建议选一个足够细分的主题（如时间管理/冥想/习惯养成），持续输出有深度的内容，建立「该领域最值得关注的人」的认知。','独立创作者（主流路径） / 知识付费平台（得到/知乎） / 出版社签约作者 / MCN个人发展垂类','兴趣输出 → 稳定更新 → 小范围影响力 → 商业化尝试（课程/咨询/社群） → 个人品牌/IP/产品矩阵'] },
+  { j:'社交媒体经理', d:'运营品牌社交媒体账号与粉丝互动', k:['生活方式','文化传播','影响力','善于营造氛围'], a:['在「{p}」方向做「社交媒体经理」，核心是用社交内容连接品牌和用户。建议从1-2个平台深度运营（如抖音/小红书/公众号），理解算法规则和内容趋势，用数据驱动内容策略。','品牌方社交媒体部门 / MCN / 社交媒体代理公司 / 内容平台运营团队','社媒运营专员 → 社媒运营经理 → 社媒运营总监 → 品牌数字营销VP → 社媒策略独立顾问'] },
+  { j:'创新顾问', d:'帮助组织建立创新文化和流程', k:['变革创新','创造力','总能找到创新方案','变革管理'], a:['在「{p}」方向做「创新顾问」，核心是用系统方法帮助组织变得更具创新能力。建议掌握设计思维/精益创业/敏捷等创新方法论，用「辅导一个团队完成从0到1的创新项目」作为你的案例和口碑。','创新咨询公司（IDEO/Frog/DesignAffairs） / 大型企业创新部门 / 创业加速器 / 独立创新顾问','创新助理 → 创新顾问 → 高级创新顾问 → 创新总监/创新业务负责人 → 首席创新官 / 创新合伙人'] },
+  { j:'教育科技创业者', d:'用技术手段革新教育体验', k:['教育学习','科技创新','人工智能','商业创业'], a:['在「{p}」方向做「教育科技创业者」，核心是用技术放大教育的触达和效果。建议从一个具体的教学痛点出发（如学生作业反馈慢/老师备课负担重），用最小技术原型验证解决方案。','教育科技赛道创业社区 / 教育产业基金/投资机构 / 教育企业合作伙伴 / 高校产学研合作','痛点发现 → MVP开发 → 种子/合作学校验证 → PMF → A轮融资 → 规模化与持续增长'] },
+  { j:'视觉设计师/插画师', d:'创作视觉作品，从插画到品牌视觉', k:['艺术设计','美学追求','创造力'], a:['在「{p}」方向做「视觉设计师/插画师」，核心是用视觉打动人心。建议建立个人风格鲜明的作品集网站，在社交媒体展示创作过程和思路。AI辅助工具是加速器，但独特审美和创意是护城河。','设计工作室 / 品牌方设计部门 / 出版/媒体插画师 / 独立视觉设计师/插画师（主流路径）','初级设计师 → 设计师/插画师 → 高级设计师 → 设计Lead/创意总监 → 独立设计工作室创始人/设计VP'] },
+  { j:'数据分析师', d:'分析数据、制作报告、驱动决策', k:['有强大逻辑推理','擅长整理复杂信息','擅长发现事物间的联系'], a:['在「{p}」方向做「数据分析师」，核心是把数据转化为业务语言和可行动的建议。建议掌握SQL+Python+BI工具(Tableau/PowerBI)，聚焦1个行业积累业务理解。「用数据讲一个好故事」比「会用多少工具」更重要。','互联网公司数据分析团队 / 金融/电商/教育等行业数据部门 / 咨询公司 / 创业公司Growth数据岗','数据助理 → 数据分析师 → 高级数据分析师 → 数据科学经理/分析负责人 → CDO / 数据VP'] },
+  { j:'用户体验策略师', d:'制定产品体验战略，提升全链路体验', k:['善于观察他人','擅长把抽象变具体','能快速找到问题核心'], a:['在「{p}」方向做「用户体验策略师」，核心是从战略层面定义产品的体验方向。建议兼具用户研究能力和商业思维——「体验」不止是界面好看，更是帮用户高效完成目标。','咨询公司体验创新部门 / 互联网公司用户体验团队 / 设计咨询公司 / 独立体验策略顾问','UX研究员/设计师 → 体验策略师 → 高级体验策略师 → 体验策略总监/首席体验官 → 独立体验咨询顾问'] }
+];
+
+function matchJobs(passion, talent, values) {
+  const userKWs = [...passion, ...talent, ...values].map(k => k.trim()).filter(Boolean);
+  if (!userKWs.length) return [];
+  const scored = jobDB.map(entry => {
+    let score = 0;
+    const matchedTags = [];
+    for (const uk of userKWs) {
+      for (const dk of entry.k) {
+        if (dk === uk || dk.includes(uk) || uk.includes(dk)) { score++; if (!matchedTags.includes(dk)) matchedTags.push(dk); }
+      }
+    }
+    return { ...entry, score, matchedTags };
+  });
+  return scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+}
+
+// Generate per-job concrete advice (from job's own 'a' field)
+function generateJobFit(job, passion, talent, values, directions) {
+  const esc = escapeHtml;
+  const pText = passion.length ? passion.map(esc).join('、') : '';
+  if (!job.a || !job.a.length) {
+    return [
+      '🎯 聚焦领域：在「' + pText + '」方向做「' + esc(job.j) + '」，了解该岗位在当前市场的核心产出要求并积累作品',
+      '🏢 目标机构：在主流招聘平台搜索「' + pText + ' ' + esc(job.j) + '」，关注头部公司的岗位定义',
+      '📈 成长路径：' + esc(job.j) + ' → 高级专家/团队Lead → 业务负责人 → 行业资深专家'
+    ];
+  }
+  return [
+    '🎯 聚焦领域：' + job.a[0].replace(/\{p\}/g, pText),
+    '🏢 目标机构：' + job.a[1].replace(/\{p\}/g, pText),
+    '📈 成长路径：' + job.a[2].replace(/\{p\}/g, pText)
+  ];
+}
+
+function buildSearchURL(keywords) {
+  const q = keywords.join(' ') + ' 招聘 职位';
+  return 'https://www.google.com/search?q=' + encodeURIComponent(q);
+}
+
+function renderResults() {
+  const passion = (state.keywords.passion || []).filter(k => k && k.trim());
+  const talent = (state.keywords.talent || []).filter(k => k && k.trim());
+  const values = (state.keywords.values || []).filter(k => k && k.trim());
+
+  const pText = passion.join('、') || '（待补充）';
+  const tText = talent.join('、') || '（待补充）';
+  const vText = values.join('、') || '（待补充）';
+
+  // Generate directions
+  const directions = [
+    `成为一名在「${pText}」领域里，用「${tText}」的方式，推动「${vText}」的人`,
+    `创造一个用「${tText}」去解决「${pText}」领域中关于「${vText}」问题的产品或服务`,
+    `在「${pText}」的方向深耕，发挥你「${tText}」的优势，始终追求「${vText}」`
+  ];
+
+  // Action steps
+  const actions = [
+    `在接下来的一周，花 30 分钟写下你对上述三个方向的真实感受——哪个让你最心动？哪个让你最害怕？`,
+    `寻找在「${pText}」领域中、正在做与「${vText}」相关工作的组织或个人，了解他们的故事和日常`,
+    `尝试用你「${tText}」的方式，在「${pText}」领域做一个小项目——不求完美，只求开始`,
+    `建立一个"心动日记"，每天记录让你感到兴奋和有意义的瞬间，持续两周后回顾规律`,
+    `不要急于确定一个"答案"。方向会在行动中逐渐清晰，保持探索的心态`
+  ];
+
+  app.innerHTML = `
+    <div class="screen active results-screen">
+      <div class="results-header">
+        <h1>你的三圈交集</h1>
+        <p>以下是基于你的回答生成的个性化方向</p>
+      </div>
+
+      <div class="venn-container">
+        <svg viewBox="0 0 520 540" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+          <!-- ── Circles ── -->
+          <circle cx="190" cy="205" r="130" fill="#FF6B6B" fill-opacity="0.16" stroke="#FF6B6B" stroke-opacity="0.45" stroke-width="1.5"/>
+          <circle cx="330" cy="205" r="130" fill="#5B8FB9" fill-opacity="0.16" stroke="#5B8FB9" stroke-opacity="0.45" stroke-width="1.5"/>
+          <circle cx="260" cy="320" r="130" fill="#6BAB7B" fill-opacity="0.16" stroke="#6BAB7B" stroke-opacity="0.45" stroke-width="1.5"/>
+
+          <!-- ── Phase labels ── -->
+          <rect x="20" y="26" width="110" height="32" rx="8" fill="#FF6B6B" fill-opacity="0.12"/>
+          <text x="75" y="47" text-anchor="middle" fill="#FF6B6B" font-size="14" font-weight="700">🔥 喜欢的事</text>
+
+          <rect x="390" y="26" width="110" height="32" rx="8" fill="#5B8FB9" fill-opacity="0.12"/>
+          <text x="445" y="47" text-anchor="middle" fill="#5B8FB9" font-size="14" font-weight="700">💡 擅长的事</text>
+
+          <rect x="205" y="496" width="110" height="32" rx="8" fill="#6BAB7B" fill-opacity="0.12"/>
+          <text x="260" y="517" text-anchor="middle" fill="#6BAB7B" font-size="14" font-weight="700">🌱 重要的事</text>
+
+          <!-- ── Passion keywords (inside left circle, x≈95, y starting 148) ── -->
+          ${passion.length > 0 ? passion.map((kw, i) => {
+            const w = Math.min(escapeXml(kw).length * 13 + 16, 110);
+            return `<rect x="95" y="${148 + i * 26}" width="${w}" height="20" rx="10" fill="#FF6B6B" fill-opacity="0.15"/>
+          <text x="103" y="${162 + i * 26}" fill="#c0392b" font-size="12" font-weight="600">${escapeXml(kw)}</text>`;
+          }).join('\n          ') : `<text x="150" y="165" text-anchor="middle" fill="#FF6B6B" fill-opacity="0.45" font-size="12">（待填写）</text>`}
+
+          <!-- ── Talent keywords (inside right circle, x≈340, y starting 148) ── -->
+          ${talent.length > 0 ? talent.map((kw, i) => {
+            const w = Math.min(escapeXml(kw).length * 13 + 16, 100);
+            return `<rect x="340" y="${148 + i * 26}" width="${w}" height="20" rx="10" fill="#5B8FB9" fill-opacity="0.15"/>
+          <text x="348" y="${162 + i * 26}" fill="#2471a3" font-size="12" font-weight="600">${escapeXml(kw)}</text>`;
+          }).join('\n          ') : `<text x="370" y="165" text-anchor="middle" fill="#5B8FB9" fill-opacity="0.45" font-size="12">（待填写）</text>`}
+
+          <!-- ── Values keywords (inside bottom circle, x centered, y starting 358) ── -->
+          ${values.length > 0 ? values.map((kw, i) => {
+            const w = Math.min(escapeXml(kw).length * 13 + 16, 110);
+            return `<rect x="${260 - w/2}" y="${358 + i * 26}" width="${w}" height="20" rx="10" fill="#6BAB7B" fill-opacity="0.15"/>
+          <text x="260" y="${372 + i * 26}" text-anchor="middle" fill="#1e8449" font-size="12" font-weight="600">${escapeXml(kw)}</text>`;
+          }).join('\n          ') : `<text x="260" y="385" text-anchor="middle" fill="#6BAB7B" fill-opacity="0.45" font-size="12">（待填写）</text>`}
+
+          <!-- ── Center ── -->
+          <circle cx="260" cy="248" r="44" fill="white" fill-opacity="0.92"/>
+          <circle cx="260" cy="248" r="44" fill="none" stroke="#2D3436" stroke-opacity="0.1" stroke-width="1.5"/>
+          <text x="260" y="241" text-anchor="middle" fill="#2D3436" font-size="13" font-weight="700">你真正</text>
+          <text x="260" y="258" text-anchor="middle" fill="#2D3436" font-size="13" font-weight="700">想做的事</text>
+        </svg>
+      </div>
+
+      <!-- Formula -->
+      <div class="formula-box">
+        <div class="label">YOUR FORMULA</div>
+        <div class="formula-text">
+          用 <span class="talent-text">${tText}</span> 的方式<br>
+          在 <span class="passion-text">${pText}</span> 的领域<br>
+          实现 <span class="values-text">${vText}</span>
+        </div>
+      </div>
+
+      <!-- Dimension Summary -->
+      <div class="results-section">
+        <h3>📋 你的三要素</h3>
+        <div class="dimension-summary">
+          <div class="dim-summary-card passion">
+            <div class="icon">🔥</div>
+            <div class="content">
+              <div class="name">喜欢的事（热情领域）</div>
+              <div class="keywords">${passion.map(k => `<span class="synthesis-tag passion">${escapeHtml(k)}</span>`).join('')}</div>
+            </div>
+          </div>
+          <div class="dim-summary-card talent">
+            <div class="icon">💡</div>
+            <div class="content">
+              <div class="name">擅长的事（天赋才能）</div>
+              <div class="keywords">${talent.map(k => `<span class="synthesis-tag talent">${escapeHtml(k)}</span>`).join('')}</div>
+            </div>
+          </div>
+          <div class="dim-summary-card values">
+            <div class="icon">🌱</div>
+            <div class="content">
+              <div class="name">重要的事（核心价值观）</div>
+              <div class="keywords">${values.map(k => `<span class="synthesis-tag values">${escapeHtml(k)}</span>`).join('')}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Directions -->
+      <div class="results-section">
+        <h3>🧭 可能的方向</h3>
+        ${directions.map((d, i) => `<div class="direction-card" data-num="${i+1}">${escapeHtml(d)}</div>`).join('')}
+      </div>
+
+      <!-- Job Suggestions -->
+      ${(() => {
+        const jobs = matchJobs(passion, talent, values);
+        const searchUrl = buildSearchURL([...passion, ...talent]);
+        if (!jobs.length) {
+          return `<div class="results-section">
+            <h3>💼 职位建议</h3>
+            <div class="job-no-match">
+              <p>根据你当下的关键词，暂时没有匹配到具体职位。</p>
+              <p>试试回到上一步，补充或调整关键词，再来看看~</p>
+              <a class="job-search-link" href="${searchUrl}" target="_blank" rel="noopener">🔍 在招聘网站上搜索相关职位</a>
+            </div>
+          </div>`;
+        }
+        return `<div class="results-section">
+          <h3>💼 职位建议（共 ${jobs.length} 个，按方向契合度排序）</h3>
+          ${jobs.map((job, idx) => {
+            const fitDescriptions = generateJobFit(job, passion, talent, values, directions);
+            return `
+            <div class="job-card">
+              <div class="job-header-row">
+                <span class="job-rank">#${idx + 1}</span>
+                <div class="job-title">${escapeHtml(job.j)}</div>
+                <div class="job-score">匹配 ${job.score}</div>
+              </div>
+              <div class="job-base-desc">${escapeHtml(job.d)}</div>
+              <div class="job-tags">${job.matchedTags.map(t => `<span class="job-tag">${escapeHtml(t)}</span>`).join('')}</div>
+              <div class="job-fit-section">
+                <div class="job-fit-title">💬 为什么适合你</div>
+                <ul class="job-fit-list">
+                  ${fitDescriptions.map(fd => `<li>${fd}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          `}).join('')}
+          <div style="text-align:center;margin-top:16px;">
+            <a class="job-search-link" href="${searchUrl}" target="_blank" rel="noopener">🔍 在招聘网站上查看更多相关职位</a>
+          </div>
+        </div>`;
+      })()}
+
+      <!-- Action Steps -->
+      <div class="results-section">
+        <h3>🚀 下一步行动建议</h3>
+        <div class="action-list">
+          ${actions.map(a => `<div class="action-item">${escapeHtml(a)}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Quote -->
+      <div style="text-align:center;padding:32px 16px;color:var(--text-secondary);font-size:14px;line-height:1.8;">
+        <p>"真正想做的事，不是找到的，而是梳理出来的。"</p>
+        <p style="margin-top:8px;font-size:12px;">— 八木仁平《如何找到想做的事》</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="results-actions">
+        <button class="btn btn-primary" onclick="downloadPDF()" id="pdfBtn">📄 保存为 PDF</button>
+        <button class="btn btn-primary" onclick="saveToServer()" id="shareBtn" style="background:linear-gradient(135deg,#6BAB7B,#5B8FB9)">🔗 保存并分享</button>
+        <button class="btn btn-secondary" onclick="state.step=16;saveState();render();">✏️ 修改关键词</button>
+        <button class="btn btn-secondary" onclick="resetTool()">↻ 重新开始</button>
+      </div>
+    </div>
+  `;
+}
+
+function downloadPDF() {
+  const btn = document.getElementById('pdfBtn');
+  const origText = btn.textContent;
+  btn.textContent = '⏳ 生成中…';
+  btn.disabled = true;
+
+  // Check if library loaded
+  if (typeof html2pdf === 'undefined') {
+    window.print();
+    btn.textContent = origText;
+    btn.disabled = false;
+    return;
+  }
+
+  const el = document.querySelector('.results-screen');
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'padding:20px 28px;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:#2D3436;line-height:1.7;';
+  wrapper.innerHTML = el.innerHTML;
+
+  // Remove action buttons from clone
+  const actionsClone = wrapper.querySelector('.results-actions');
+  if (actionsClone) actionsClone.remove();
+
+  // Reliable heading orphan fix: wrap each h3 + its next sibling in a keep-together container
+  wrapper.querySelectorAll('.results-section').forEach(section => {
+    const h3 = section.querySelector('h3');
+    if (h3 && h3.nextElementSibling) {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'page-break-inside:avoid;break-inside:avoid;';
+      h3.parentNode.insertBefore(wrap, h3);
+      // Collect h3 + next sibling into the wrapper
+      const next = h3.nextElementSibling;
+      wrap.appendChild(h3);
+      if (next && next.parentNode === section) wrap.appendChild(next);
+    }
+  });
+  // Keep individual cards intact
+  wrapper.querySelectorAll('.direction-card, .job-card, .action-item, .job-fit-section').forEach(el => {
+    el.style.cssText = (el.style.cssText || '') + ';page-break-inside:avoid;';
+  });
+
+  const opt = {
+    margin:       [0.5, 0.5],
+    filename:     '三圈交集-职业探索报告.pdf',
+    image:        { type: 'jpeg', quality: 0.95 },
+    enableLinks:  false,
+    html2canvas:  { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  html2pdf().set(opt).from(wrapper).save().then(() => {
+    btn.textContent = origText;
+    btn.disabled = false;
+    wrapper.remove();
+  }).catch(() => {
+    console.warn('html2pdf failed, falling back to print');
+    window.print();
+    btn.textContent = origText;
+    btn.disabled = false;
+    wrapper.remove();
+  });
+}
+
+function resetTool() {
+  if (!confirm('确定要重新开始吗？所有回答将被清除。')) return;
+  state = {
+    step: 0,
+    answers: {},
+    keywords: { passion: [], talent: [], values: [] }
+  };
+  localStorage.removeItem('find-passion-tool');
+  // If from shared link, redirect to home
+  if ('{{ result_id | default("") }}' || new URLSearchParams(window.location.search).get('id')) {
+    window.location.href = '/';
+  } else {
+    render();
+  }
+}
+
+// ===== Server Save / Load =====
+function saveToServer() {
+  const btn = document.getElementById('shareBtn');
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = '⏳ 保存中…';
+  btn.disabled = true;
+
+  fetch('/api/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: state })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.url) {
+      const shareUrl = window.location.origin + res.url;
+      // Try native share first
+      if (navigator.share) {
+        navigator.share({ title: '我的三圈交集 · 职业探索报告', url: shareUrl });
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          btn.textContent = '✅ 已复制分享链接！';
+        }).catch(() => {
+          btn.textContent = '✅ 链接已生成！';
+          // Show a prompt with the link
+          prompt('复制这个链接分享给朋友：', shareUrl);
+        });
+      }
+      // Also show the link in the UI
+      showShareToast(shareUrl);
+    }
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 3000);
+  })
+  .catch(err => {
+    console.error('Save failed:', err);
+    btn.textContent = '❌ 保存失败，请重试';
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  });
+}
+
+function showShareToast(url) {
+  let toast = document.getElementById('share-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'share-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2D3436;color:#fff;padding:16px 24px;border-radius:12px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;max-width:90vw;text-align:center;line-height:1.6;';
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `✅ 已生成分享链接！<br><a href="${url}" style="color:#6BAB7B;text-decoration:underline;font-weight:600;word-break:break-all;">${url}</a>`;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 15000);
+}
+
+function loadFromServer(resultId) {
+  return fetch('/api/load/' + encodeURIComponent(resultId))
+    .then(r => r.json())
+    .then(res => {
+      if (res.state) {
+        state = res.state;
+        state.step = 17; // Go directly to results
+        saveState();
+        render();
+        return true;
+      }
+      return false;
+    })
+    .catch(() => false);
+}
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escapeXml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== Init =====
+
+// Flask template injects shared result_id (from /r/xxx route)
+const sharedResultId = '{{ result_id | default("") }}';
+
+// Also check URL parameter ?id=xxx
+const urlParams = new URLSearchParams(window.location.search);
+const urlResultId = urlParams.get('id');
+
+const loadId = sharedResultId || urlResultId;
+
+if (loadId) {
+  loadFromServer(loadId).then(found => {
+    if (!found) {
+      document.getElementById('app').innerHTML = '<div style="text-align:center;padding:80px 20px;"><h2>😕 未找到该结果</h2><p style="color:#999;margin:16px 0;">链接无效或已过期。</p><a href="/" style="color:#5B8FB9;font-weight:600;">重新开始探索 →</a></div>';
+    }
+  });
+} else {
+  render();
+}
+</script>
+</body>
+</html>
