@@ -17,7 +17,10 @@ app.template_folder = str(_here.parent / 'templates')
 # ── 数据库 ──
 
 # 环境变量: Vercel Postgres / Neon 连接串
+# ── 环境变量 ──
 DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
+ADMIN_USER = os.environ.get('ADMIN_USER', 'admin')
+ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin123')
 
 
 def get_db():
@@ -39,6 +42,13 @@ def get_db():
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
         return conn, False
+
+
+def _auth_required():
+    """返回 401 响应，弹出浏览器登录框"""
+    return jsonify({'error': '需要登录'}), 401, {
+        'WWW-Authenticate': 'Basic realm="管理后台"'
+    }
 
 
 def init_db():
@@ -119,7 +129,12 @@ def index():
 
 @app.route('/admin')
 def admin():
-    """管理页面：查看所有已保存的结果"""
+    """管理页面：查看所有已保存的结果（需登录）"""
+    # 基本认证
+    auth = request.authorization
+    if not auth or auth.username != ADMIN_USER or auth.password != ADMIN_PASS:
+        return _auth_required()
+
     is_pg = bool(DATABASE_URL)
     rows = []
     if is_pg:

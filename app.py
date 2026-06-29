@@ -41,6 +41,10 @@ def init_db():
 init_db()
 
 
+ADMIN_USER = os.environ.get('ADMIN_USER', 'admin')
+ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin123')
+
+
 # ── 路由 ──
 
 @app.route('/')
@@ -51,7 +55,13 @@ def index():
 
 @app.route('/admin')
 def admin():
-    """管理页面：查看所有已保存的结果"""
+    """管理页面：查看所有已保存的结果（需登录）"""
+    auth = request.authorization
+    if not auth or auth.username != ADMIN_USER or auth.password != ADMIN_PASS:
+        return jsonify({'error': '需要登录'}), 401, {
+            'WWW-Authenticate': 'Basic realm="管理后台"'
+        }
+
     rows = []
     with get_db() as conn:
         cur = conn.execute('SELECT id, created_at, views FROM results ORDER BY created_at DESC LIMIT 200')
