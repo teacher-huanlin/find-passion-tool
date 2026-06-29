@@ -189,31 +189,20 @@ def debug():
 @app.route('/admin')
 def admin():
     """管理页面：查看所有已保存的结果（需登录）"""
-    # 基本认证
     auth = request.authorization
     if not auth or auth.username != ADMIN_USER or auth.password != ADMIN_PASS:
         return _auth_required()
+    return _render_admin()
 
-    try:
-        _ensure_db()
-    except Exception as e:
-        return f'<h2>数据库初始化失败</h2><p>{e}</p><p>请配置 DATABASE_URL 环境变量。</p>', 500
 
-    is_pg = bool(DATABASE_URL)
-    rows = []
-    if is_pg:
-        conn, _ = get_db()
-        cur = conn.cursor()
-        cur.execute('SELECT id, created_at, views FROM results ORDER BY created_at DESC LIMIT 200')
-        for r in cur.fetchall():
-            rows.append(dict(r))
-        cur.close()
-        conn.close()
-    else:
-        conn, _ = get_db()
-        cur = conn.execute('SELECT id, created_at, views FROM results ORDER BY created_at DESC LIMIT 200')
-        rows = [dict(r) for r in cur.fetchall()]
-        conn.close()
+@app.route('/admin-test')
+def admin_test():
+    """无密码的 admin 调试页"""
+    return _render_admin()
+
+
+def _render_admin():
+    """admin 页面渲染（被 /admin 和 /admin-test 共用）"""
 
     items = ''.join(
         f'<tr>'
