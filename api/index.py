@@ -117,6 +117,62 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/admin')
+def admin():
+    """管理页面：查看所有已保存的结果"""
+    is_pg = bool(DATABASE_URL)
+    rows = []
+    if is_pg:
+        conn, _ = get_db()
+        cur = conn.cursor()
+        cur.execute('SELECT id, created_at, views FROM results ORDER BY created_at DESC LIMIT 200')
+        for r in cur.fetchall():
+            rows.append(dict(r))
+        cur.close()
+        conn.close()
+    else:
+        conn, _ = get_db()
+        cur = conn.execute('SELECT id, created_at, views FROM results ORDER BY created_at DESC LIMIT 200')
+        rows = [dict(r) for r in cur.fetchall()]
+        conn.close()
+
+    items = ''.join(
+        f'<tr>'
+        f'<td><a href="/r/{r["id"]}" target="_blank">{r["id"]}</a></td>'
+        f'<td>{r["created_at"]}</td>'
+        f'<td>{r["views"]}</td>'
+        f'</tr>'
+        for r in rows
+    )
+    if not items:
+        items = '<tr><td colspan="3" style="text-align:center;color:#999;padding:40px;">暂无保存记录</td></tr>'
+
+    return f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>管理后台 - 三圈交集</title>
+<style>
+  body {{ font-family: -apple-system, "PingFang SC", sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #f8f9fa; }}
+  h1 {{ font-size: 22px; color: #2D3436; margin-bottom: 8px; }}
+  p {{ color: #999; font-size: 14px; margin-bottom: 24px; }}
+  table {{ width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }}
+  th {{ background: #2D3436; color: white; padding: 12px 16px; text-align: left; font-size: 13px; }}
+  td {{ padding: 10px 16px; font-size: 13px; border-bottom: 1px solid #eee; }}
+  td a {{ color: #5B8FB9; text-decoration: none; font-weight: 600; }}
+  td a:hover {{ text-decoration: underline; }}
+  tr:hover td {{ background: #f5f7fa; }}
+  .count {{ margin-top: 16px; font-size: 13px; color: #999; }}
+</style></head>
+<body>
+  <h1>📊 管理后台</h1>
+  <p>所有保存的三圈交集结果</p>
+  <table>
+    <thead><tr><th>ID</th><th>保存时间</th><th>访问次数</th></tr></thead>
+    <tbody>{items}</tbody>
+  </table>
+  <div class="count">共 {len(rows)} 条记录</div>
+</body></html>'''
+
+
 @app.route('/r/<result_id>')
 def shared_result(result_id):
     return render_template('index.html', result_id=result_id)
