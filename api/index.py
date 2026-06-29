@@ -8,6 +8,14 @@ from pathlib import Path
 
 from flask import Flask, request, jsonify, render_template
 
+# 预导入，避免 Vercel 热加载时遗漏
+try:
+    if os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL'):
+        import psycopg2
+        import psycopg2.extras
+except ImportError:
+    pass
+
 app = Flask(__name__)
 
 # ── 模板路径（Vercel 下 api/ 文件夹比项目根深一层） ──
@@ -33,7 +41,8 @@ def get_db():
         return conn, True  # (conn, is_pg)
     else:
         # 本地 SQLite
-        db_dir = _here.parent / 'data'
+        # Vercel 环境只能写入 /tmp
+        db_dir = Path('/tmp/find-passion-tool') if os.environ.get('VERCEL') else (_here.parent / 'data')
         db_dir.mkdir(parents=True, exist_ok=True)
         db_path = db_dir / 'results.db'
 
