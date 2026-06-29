@@ -22,13 +22,46 @@ app = Flask(__name__)
 _here = Path(__file__).parent
 app.template_folder = str(_here.parent / 'templates')
 
-# ── 数据库 ──
-
-# 环境变量: Vercel Postgres / Neon 连接串
 # ── 环境变量 ──
 DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
 ADMIN_USER = os.environ.get('ADMIN_USER', 'admin')
 ADMIN_PASS = os.environ.get('ADMIN_PASS', 'admin123')
+
+# ── 数据库（惰性初始化，避免 Vercel 导入时因 /tmp 问题崩溃） ──
+_DB_INITED = False
+
+
+def _ensure_db():
+    global _DB_INITED
+    if _DB_INITED:
+        return
+    conn, is_pg = get_db()
+    try:
+        if is_pg:
+            cur = conn.cursor()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS results (
+                    id TEXT PRIMARY KEY,
+                    data TEXT NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                    views INTEGER DEFAULT 0
+                )
+            """)
+            conn.commit()
+            cur.close()
+        else:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS results (
+                    id TEXT PRIMARY KEY,
+                    data TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    views INTEGER DEFAULT 0
+                )
+            """)
+            conn.commit()
+    finally:
+        conn.close()
+    _DB_INITED = True
 
 
 def get_db():
@@ -58,35 +91,6 @@ def _auth_required():
     return jsonify({'error': '需要登录'}), 401, {
         'WWW-Authenticate': 'Basic realm="管理后台"'
     }
-
-
-def init_db():
-    conn, is_pg = get_db()
-    try:
-        if is_pg:
-            cur = conn.cursor()
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS results (
-                    id TEXT PRIMARY KEY,
-                    data TEXT NOT NULL,
-                    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                    views INTEGER DEFAULT 0
-                )
-            """)
-            conn.commit()
-            cur.close()
-        else:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS results (
-                    id TEXT PRIMARY KEY,
-                    data TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    views INTEGER DEFAULT 0
-                )
-            """)
-            conn.commit()
-    finally:
-        conn.close()
 
 
 # ── 统一查询辅助 ──
@@ -125,10 +129,6 @@ def execute(sql, params, is_pg):
         conn.close()
 
 
-# ── 启动时建表 ──
-init_db()
-
-
 # ── 路由 ──
 
 @app.route('/')
@@ -143,6 +143,11 @@ def admin():
     auth = request.authorization
     if not auth or auth.username != ADMIN_USER or auth.password != ADMIN_PASS:
         return _auth_required()
+
+    try:
+        _ensure_db()
+    except Exception as e:
+        return f'<h2>数据库初始化失败</h2><p>{e}</p><p>请配置 DATABASE_URL 环境变量。</p>', 500
 
     is_pg = bool(DATABASE_URL)
     rows = []
