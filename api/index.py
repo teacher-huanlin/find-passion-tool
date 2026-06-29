@@ -2,9 +2,10 @@
 三圈交集 · 职业探索工具 — Vercel 入口
 自动适配本地 SQLite 与生产 PostgreSQL
 """
-import json, uuid, os
+import json, uuid, os, re
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import Flask, request, jsonify, render_template
 
@@ -68,7 +69,17 @@ def get_db():
         import pg8000
         import ssl
 
-        conn = pg8000.connect(DATABASE_URL, ssl_context=ssl.create_default_context())
+        # 解析 DATABASE_URL，按参数传递给 pg8000（避免 DSN 兼容性问题）
+        parsed = urlparse(DATABASE_URL)
+        pg_kwargs = {
+            'user': parsed.username,
+            'password': parsed.password or '',
+            'host': parsed.hostname,
+            'port': parsed.port or 5432,
+            'database': parsed.path.lstrip('/').split('?')[0],
+            'ssl_context': ssl.create_default_context(),
+        }
+        conn = pg8000.connect(**pg_kwargs)
         conn.autocommit = False
         return conn, True  # (conn, is_pg)
     else:
@@ -133,6 +144,41 @@ def execute(sql, params, is_pg):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/debug')
+def debug():
+    """调试信息（不需要密码）"""
+    info = {
+        'DATABASE_URL_set': bool(DATABASE_URL),
+        'DATABASE_URL_prefix': (DATABASE_URL or '')[:20] + '...' if DATABASE_URL else '(not set)',
+        'VERCEL': bool(os.environ.get('VERCEL')),
+        'ADMIN_USER': ADMIN_USER,
+        'DB_INITED': _DB_INITED,
+    }
+    # 尝试连接数据库
+    try:
+        _ensure_db()
+        info['db_status'] = 'ok'
+        # 统计条数
+        is_pg = bool(DATABASE_URL)
+        if is_pg:
+            conn, _ = get_db()
+            cur = conn.cursor()
+            cur.execute('SELECT COUNT(*) AS c FROM results')
+            info['record_count'] = cur.fetchone()[0]
+            cur.close()
+            conn.close()
+        else:
+            conn, _ = get_db()
+            cur = conn.execute('SELECT COUNT(*) AS c FROM results')
+            info['record_count'] = cur.fetchone()['c']
+            conn.close()
+    except Exception as e:
+        info['db_status'] = 'error'
+        info['db_error'] = str(e)
+
+    return jsonify(info)
 
 
 @app.route('/admin')
