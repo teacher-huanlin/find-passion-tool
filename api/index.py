@@ -11,8 +11,7 @@ from flask import Flask, request, jsonify, render_template
 # 预导入，避免 Vercel 热加载时遗漏
 try:
     if os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL'):
-        import psycopg2
-        import psycopg2.extras
+        import pg8000
 except ImportError:
     pass
 
@@ -66,10 +65,10 @@ def _ensure_db():
 
 def get_db():
     if DATABASE_URL:
-        import psycopg2
-        import psycopg2.extras
+        import pg8000
+        import ssl
 
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = pg8000.connect(DATABASE_URL, ssl_context=ssl.create_default_context())
         conn.autocommit = False
         return conn, True  # (conn, is_pg)
     else:
