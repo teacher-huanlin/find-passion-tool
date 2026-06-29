@@ -209,6 +209,7 @@ def shared_result(result_id):
 
 @app.route('/api/save', methods=['POST'])
 def save():
+    _ensure_db()
     data = request.get_json(silent=True)
     if not data or 'state' not in data:
         return jsonify({'error': '缺少 state 数据'}), 400
@@ -234,6 +235,7 @@ def save():
 
 @app.route('/api/load/<result_id>')
 def load(result_id):
+    _ensure_db()
     is_pg = bool(DATABASE_URL)
     row = query_one(
         'SELECT data, views FROM results WHERE id = %s' if is_pg else
